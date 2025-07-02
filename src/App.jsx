@@ -3,15 +3,18 @@ import LoginPage from "./pages/LoginPage";
 import TimesheetPage from "./pages/Timesheet/TimesheetPage";
 import StaffManagementPage from "./pages/StaffManagement/StaffManagementPage";
 import DashboardLayout from "./components/DashboardLayout";
-import ReportPage from "./pages/ReportPage"; 
+import ReportPage from "./pages/ReportPage";
+import Profile from "./pages/Profile/ProfilePage";
 
 function App() {
   // const role = localStorage.getItem("role") || "user";
-  const role = 'user'
+  const role = "user";
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/staff-management" element={<StaffManagementPage />} />
         <Route
           path="/timesheet"
           element={

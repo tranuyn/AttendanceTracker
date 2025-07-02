@@ -11,9 +11,11 @@
     "tailwind:init": "tailwindcss init -p"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.3.0",
     "antd": "^5.26.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.59.0",
     "react-router-dom": "^7.6.3"
   },
   "devDependencies": {

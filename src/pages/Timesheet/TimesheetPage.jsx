@@ -1,33 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  DatePicker, 
-  Card, 
-  Button, 
-  Modal, 
-  Form, 
-  TimePicker, 
-  message, 
-  Statistic, 
-  Row, 
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  DatePicker,
+  Card,
+  Button,
+  Modal,
+  Form,
+  TimePicker,
+  message,
+  Statistic,
+  Row,
   Col,
   Tag,
   Space,
   Input,
   Select,
-  Divider
-} from 'antd';
-import { 
-  ClockCircleOutlined, 
-  PlusOutlined, 
-  EditOutlined, 
+  Divider,
+} from "antd";
+import {
+  ClockCircleOutlined,
+  PlusOutlined,
+  EditOutlined,
   DeleteOutlined,
   CalendarOutlined,
   UserOutlined,
   TeamOutlined,
-  FileTextOutlined
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
+  FileTextOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -40,43 +41,82 @@ export default function TimesheetApp() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [userRole] = useState("staff");
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const fetchUser = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      console.log(token);
 
+      const res = await fetch("http://localhost:8081/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const user = await res.json();
+      console.log("User info from backend:", user);
+    } catch (err) {
+      console.error("Lỗi lấy thông tin user:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  });
 
   // Mock data
   const mockTimesheetData = [
-    { 
-      key: '1', 
-      date: '2025-06-01', 
-      checkIn: '08:00', 
-      checkOut: '17:00', 
+    {
+      key: "1",
+      date: "2025-06-01",
+      checkIn: "08:00",
+      checkOut: "17:00",
       totalHours: 8,
-      status: 'completed',
-      employee: 'Nguyễn Văn A'
+      status: "completed",
+      employee: "Nguyễn Văn A",
     },
-    { 
-      key: '2', 
-      date: '2025-06-02', 
-      checkIn: '08:15', 
-      checkOut: '17:05', 
+    {
+      key: "2",
+      date: "2025-06-02",
+      checkIn: "08:15",
+      checkOut: "17:05",
       totalHours: 7.8,
-      status: 'completed',
-      employee: 'Nguyễn Văn A'
+      status: "completed",
+      employee: "Nguyễn Văn A",
     },
-    { 
-      key: '3', 
-      date: '2025-06-03', 
-      checkIn: '08:30', 
-      checkOut: '16:45', 
+    {
+      key: "3",
+      date: "2025-06-03",
+      checkIn: "08:30",
+      checkOut: "16:45",
       totalHours: 7.25,
-      status: 'late',
-      employee: 'Nguyễn Văn A'
+      status: "late",
+      employee: "Nguyễn Văn A",
     },
   ];
 
   const mockStaffData = [
-    { key: '1', name: 'Nguyễn Văn A', email: 'a@company.com', department: 'IT', totalHours: 160 },
-    { key: '2', name: 'Trần Thị B', email: 'b@company.com', department: 'HR', totalHours: 155 },
-    { key: '3', name: 'Lê Văn C', email: 'c@company.com', department: 'Finance', totalHours: 162 },
+    {
+      key: "1",
+      name: "Nguyễn Văn A",
+      email: "a@company.com",
+      department: "IT",
+      totalHours: 160,
+    },
+    {
+      key: "2",
+      name: "Trần Thị B",
+      email: "b@company.com",
+      department: "HR",
+      totalHours: 155,
+    },
+    {
+      key: "3",
+      name: "Lê Văn C",
+      email: "c@company.com",
+      department: "Finance",
+      totalHours: 162,
+    },
   ];
   useEffect(() => {
     setTimesheetData(mockTimesheetData);
@@ -121,7 +161,11 @@ export default function TimesheetApp() {
       render: (_, record) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.key)}
+          />
         </Space>
       ),
     },
@@ -187,7 +231,9 @@ export default function TimesheetApp() {
 
     if (editingRecord) {
       setTimesheetData(
-        timesheetData.map((item) => (item.key === editingRecord.key ? newRecord : item))
+        timesheetData.map((item) =>
+          item.key === editingRecord.key ? newRecord : item
+        )
       );
       message.success("Cập nhật thành công!");
     } else {
@@ -199,7 +245,8 @@ export default function TimesheetApp() {
   };
 
   const totalHours = timesheetData.reduce((sum, r) => sum + r.totalHours, 0);
-  const avgHours = timesheetData.length > 0 ? totalHours / timesheetData.length : 0;
+  const avgHours =
+    timesheetData.length > 0 ? totalHours / timesheetData.length : 0;
 
   const renderContent = () => {
     switch (currentView) {
@@ -208,20 +255,44 @@ export default function TimesheetApp() {
           <div className="mx-auto space-y-6">
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
-                <Card><Statistic title="Tổng giờ làm" value={totalHours} suffix="h" /></Card>
+                <Card>
+                  <Statistic
+                    title="Tổng giờ làm"
+                    value={totalHours}
+                    suffix="h"
+                  />
+                </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
-                <Card><Statistic title="Trung bình/ngày" value={avgHours.toFixed(1)} suffix="h" /></Card>
+                <Card>
+                  <Statistic
+                    title="Trung bình/ngày"
+                    value={avgHours.toFixed(1)}
+                    suffix="h"
+                  />
+                </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
-                <Card><Statistic title="Số ngày làm" value={timesheetData.length} suffix="ngày" /></Card>
+                <Card>
+                  <Statistic
+                    title="Số ngày làm"
+                    value={timesheetData.length}
+                    suffix="ngày"
+                  />
+                </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
-                <Card><Statistic title="Hiệu suất" value={((avgHours / 8) * 100).toFixed(0)} suffix="%" /></Card>
+                <Card>
+                  <Statistic
+                    title="Hiệu suất"
+                    value={((avgHours / 8) * 100).toFixed(0)}
+                    suffix="%"
+                  />
+                </Card>
               </Col>
             </Row>
 
-            <Card 
+            <Card
               title="Bảng chấm công"
               extra={
                 <Space>
@@ -231,13 +302,21 @@ export default function TimesheetApp() {
                     onChange={setSelectedMonth}
                     allowClear={false}
                   />
-                  <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                  >
                     Thêm mới
                   </Button>
                 </Space>
               }
             >
-              <Table columns={timesheetColumns} dataSource={timesheetData} pagination={{ pageSize: 10 }} />
+              <Table
+                columns={timesheetColumns}
+                dataSource={timesheetData}
+                pagination={{ pageSize: 10 }}
+              />
             </Card>
           </div>
         );
@@ -246,9 +325,17 @@ export default function TimesheetApp() {
         return (
           <Card
             title="Quản lý nhân sự"
-            extra={<Button icon={<PlusOutlined />} type="primary">Thêm nhân viên</Button>}
+            extra={
+              <Button icon={<PlusOutlined />} type="primary">
+                Thêm nhân viên
+              </Button>
+            }
           >
-            <Table columns={staffColumns} dataSource={mockStaffData} pagination={{ pageSize: 10 }} />
+            <Table
+              columns={staffColumns}
+              dataSource={mockStaffData}
+              pagination={{ pageSize: 10 }}
+            />
           </Card>
         );
 
@@ -257,7 +344,9 @@ export default function TimesheetApp() {
           <div className="max-w-6xl mx-auto space-y-6">
             <Card title="Bộ lọc báo cáo">
               <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}><RangePicker style={{ width: "100%" }} /></Col>
+                <Col xs={24} md={8}>
+                  <RangePicker style={{ width: "100%" }} />
+                </Col>
                 <Col xs={24} md={8}>
                   <select className="w-full border p-2 rounded">
                     <option>Tất cả phòng ban</option>
@@ -267,17 +356,27 @@ export default function TimesheetApp() {
                   </select>
                 </Col>
                 <Col xs={24} md={8}>
-                  <Button type="primary" block>Tạo báo cáo</Button>
+                  <Button type="primary" block>
+                    Tạo báo cáo
+                  </Button>
                 </Col>
               </Row>
             </Card>
 
             <Card title="Thống kê tổng quan">
               <Row gutter={[16, 16]}>
-                <Col xs={24} md={6}><Statistic title="Tổng nhân viên" value={25} /></Col>
-                <Col xs={24} md={6}><Statistic title="Có mặt hôm nay" value={23} /></Col>
-                <Col xs={24} md={6}><Statistic title="Đi trễ" value={2} /></Col>
-                <Col xs={24} md={6}><Statistic title="Vắng mặt" value={0} /></Col>
+                <Col xs={24} md={6}>
+                  <Statistic title="Tổng nhân viên" value={25} />
+                </Col>
+                <Col xs={24} md={6}>
+                  <Statistic title="Có mặt hôm nay" value={23} />
+                </Col>
+                <Col xs={24} md={6}>
+                  <Statistic title="Đi trễ" value={2} />
+                </Col>
+                <Col xs={24} md={6}>
+                  <Statistic title="Vắng mặt" value={0} />
+                </Col>
               </Row>
             </Card>
           </div>
@@ -292,10 +391,25 @@ export default function TimesheetApp() {
     <div className="w-full bg-red-500 py-6 overflow-hidden">
       <div className="flex justify-center  max-w-7xl  mb-4">
         <Space>
-          <Button type={currentView === "timesheet" ? "primary" : "default"} onClick={() => setCurrentView("timesheet")}>Chấm công</Button>
-          <Button type={currentView === "reports" ? "primary" : "default"} onClick={() => setCurrentView("reports")}>Báo cáo</Button>
+          <Button
+            type={currentView === "timesheet" ? "primary" : "default"}
+            onClick={() => setCurrentView("timesheet")}
+          >
+            Chấm công
+          </Button>
+          <Button
+            type={currentView === "reports" ? "primary" : "default"}
+            onClick={() => setCurrentView("reports")}
+          >
+            Báo cáo
+          </Button>
           {userRole === "admin" && (
-            <Button type={currentView === "staff" ? "primary" : "default"} onClick={() => setCurrentView("staff")}>Nhân sự</Button>
+            <Button
+              type={currentView === "staff" ? "primary" : "default"}
+              onClick={() => setCurrentView("staff")}
+            >
+              Nhân sự
+            </Button>
           )}
         </Space>
       </div>
@@ -308,18 +422,32 @@ export default function TimesheetApp() {
         footer={null}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item name="date" label="Ngày" rules={[{ required: true, message: "Chọn ngày!" }]}>
+          <Form.Item
+            name="date"
+            label="Ngày"
+            rules={[{ required: true, message: "Chọn ngày!" }]}
+          >
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="checkIn" label="Giờ vào" rules={[{ required: true, message: "Chọn giờ vào!" }]}>
+          <Form.Item
+            name="checkIn"
+            label="Giờ vào"
+            rules={[{ required: true, message: "Chọn giờ vào!" }]}
+          >
             <TimePicker format="HH:mm" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="checkOut" label="Giờ ra" rules={[{ required: true, message: "Chọn giờ ra!" }]}>
+          <Form.Item
+            name="checkOut"
+            label="Giờ ra"
+            rules={[{ required: true, message: "Chọn giờ ra!" }]}
+          >
             <TimePicker format="HH:mm" style={{ width: "100%" }} />
           </Form.Item>
           <div className="flex justify-end space-x-2">
             <Button onClick={() => setIsModalVisible(false)}>Hủy</Button>
-            <Button type="primary" htmlType="submit">{editingRecord ? "Cập nhật" : "Thêm mới"}</Button>
+            <Button type="primary" htmlType="submit">
+              {editingRecord ? "Cập nhật" : "Thêm mới"}
+            </Button>
           </div>
         </Form>
       </Modal>

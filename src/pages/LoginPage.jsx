@@ -1,27 +1,40 @@
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, message } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Card, Typography, message } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { loginWithRedirect, isAuthenticated, user, getAccessTokenSilently } =
+    useAuth0();
+  const onFinish = async () => {
+    loginWithRedirect();
 
-  const onFinish = (values) => {
-    const { email, password } = values;
+    const token = await getAccessTokenSilently();
 
-    // Giả lập xác thực (có thể thay bằng API sau này)
-    if (email === "admin@example.com" && password === "admin") {
-      localStorage.setItem("role", "admin");
-      message.success("Đăng nhập thành công với vai trò Admin!");
-      navigate("/timesheet");
-    } else if (email === "user@example.com" && password === "user") {
-      localStorage.setItem("role", "user");
-      message.success("Đăng nhập thành công với vai trò User!");
-      navigate("/timesheet");
-    } else {
-      message.error("Tài khoản hoặc mật khẩu không đúng!");
-    }
+    const res = await fetch("http://localhost:8081/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const user = await res.json();
+    console.log("User info from backend:", user);
+
+    // // Giả lập xác thực (có thể thay bằng API sau này)
+    // if (email === "admin@example.com" && password === "admin") {
+    //   localStorage.setItem("role", "admin");
+    //   message.success("Đăng nhập thành công với vai trò Admin!");
+    //   navigate("/timesheet");
+    // } else if (email === "user@example.com" && password === "user") {
+    //   localStorage.setItem("role", "user");
+    //   message.success("Đăng nhập thành công với vai trò User!");
+    //   navigate("/timesheet");
+    // } else {
+    //   message.error("Tài khoản hoặc mật khẩu không đúng!");
+    // }
   };
 
   return (
@@ -33,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         <Form name="login" layout="vertical" onFinish={onFinish}>
-          <Form.Item
+          {/* <Form.Item
             label="Email"
             name="email"
             rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
@@ -47,10 +60,14 @@ export default function LoginPage() {
             rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
           >
             <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item className="text-center">
-            <Button type="primary" htmlType="submit" className="w-full">
+            <Button
+              type="primary"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              htmlType="submit"
+            >
               Đăng nhập
             </Button>
           </Form.Item>

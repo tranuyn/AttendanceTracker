@@ -19,6 +19,12 @@ const DashboardLayout = ({ children, role }) => {
         label: "Timesheet",
         onClick: () => navigate("/timesheet"),
       },
+      {
+        key: "profile",
+        icon: <ClockCircleOutlined />,
+        label: "Profile",
+        onClick: () => navigate("/profile"),
+      },
     ],
     staff: [
       {
@@ -26,6 +32,12 @@ const DashboardLayout = ({ children, role }) => {
         icon: <ClockCircleOutlined />,
         label: "Timesheet",
         onClick: () => navigate("/timesheet"),
+      },
+      {
+        key: "profile",
+        icon: <ClockCircleOutlined />,
+        label: "Profile",
+        onClick: () => navigate("/profile"),
       },
     ],
     admin: [
@@ -41,13 +53,19 @@ const DashboardLayout = ({ children, role }) => {
         label: "Reports",
         onClick: () => navigate("/reports"),
       },
+      {
+        key: "profile",
+        icon: <ClockCircleOutlined />,
+        label: "Profile",
+        onClick: () => navigate("/profile"),
+      },
     ],
   };
 
   const currentMenu = menuItems[role] || menuItems.user;
 
   return (
-    <Layout style={{ minHeight: "100vh", minWidth: '100vw'}}>
+    <Layout style={{ minHeight: "100vh", minWidth: "100vw" }}>
       <Sider
         collapsible
         width={200}
@@ -76,7 +94,15 @@ const DashboardLayout = ({ children, role }) => {
         </div>
         <Menu mode="inline" theme="dark" items={currentMenu} />
       </Sider>
-      <Content style={{display: "flex", flex: 1, width: '100%',  marginLeft: 200, padding: 5}}>
+      <Content
+        style={{
+          display: "flex",
+          flex: 1,
+          width: "100%",
+          marginLeft: 200,
+          padding: 5,
+        }}
+      >
         {children}
       </Content>
     </Layout>
