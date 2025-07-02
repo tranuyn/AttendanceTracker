@@ -1,11 +1,27 @@
-import { Form, Input, Button, Card, Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
   const onFinish = (values) => {
-    console.log('Login info:', values);
+    const { email, password } = values;
+
+    // Giả lập xác thực (có thể thay bằng API sau này)
+    if (email === "admin@example.com" && password === "admin") {
+      localStorage.setItem("role", "admin");
+      message.success("Đăng nhập thành công với vai trò Admin!");
+      navigate("/timesheet");
+    } else if (email === "user@example.com" && password === "user") {
+      localStorage.setItem("role", "user");
+      message.success("Đăng nhập thành công với vai trò User!");
+      navigate("/timesheet");
+    } else {
+      message.error("Tài khoản hoặc mật khẩu không đúng!");
+    }
   };
 
   return (

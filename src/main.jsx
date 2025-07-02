@@ -2,10 +2,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import 'antd/dist/reset.css';
+import { StyleProvider } from '@ant-design/cssinjs';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <StyleProvider layer>
+        <App />
+    </StyleProvider>
   </StrictMode>,
 )

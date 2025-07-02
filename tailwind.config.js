@@ -12,5 +12,8 @@ export default {
     },
   },
   plugins: [],
+  corePlugins: {
+    preflight: false, // Tắt CSS reset của Tailwind để tránh xung đột với Ant Design
+  },
 }
 
