@@ -4,7 +4,9 @@ import "./index.css";
 import App from "./App.jsx";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { Auth0Provider } from "@auth0/auth0-react";
-import { ConfigProvider } from 'antd';
+import { ConfigProvider } from "antd";
+import { Provider } from "react-redux";
+import store from "./store"; 
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 const clientId = import.meta.env.VITE_AUTH0_CLIENTID;
@@ -27,7 +29,9 @@ createRoot(document.getElementById("root")).render(
             redirect_uri: window.location.origin + "/timesheet",
           }}
         >
-          <App />
+          <Provider store={store}>
+            <App />
+          </Provider>
         </Auth0Provider>
       </ConfigProvider>
     </StyleProvider>

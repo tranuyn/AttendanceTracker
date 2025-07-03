@@ -83,7 +83,7 @@ const DashboardLayout = ({ children, role }) => {
           overflow: "auto",
           height: "100vh",
           backgroundColor: 'white',
-          paddingTop: 15
+          paddingTop: 15,
         }}
       >
         <div

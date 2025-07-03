@@ -1,29 +1,64 @@
-// pages/ProfileForm.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { InputComponent } from "../../components/InputComponent";
-import { Button, Row, Col, Card, Avatar } from "antd";
+import { Button, Row, Col, Card, Avatar, Typography } from "antd";
+import { useSelector } from "react-redux";
+
+const { Title, Text } = Typography;
 
 const Profile = () => {
-  const { control, handleSubmit } = useForm();
+  const user = useSelector((state) => state.user.currentUser);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+  } = useForm({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      gender: "",
+      phoneNumber: "",
+      address: "",
+      position: "",
+      country: "",
+      language: "",
+      timeZone: "",
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        fullName: user.name || "",
+        email: user.email || "",
+        gender: user.gender || "",
+        phoneNumber: user.phoneNumber || "",
+        address: user.address || "",
+        position: user.position || "",
+        country: "",
+        language: "",
+        timeZone: "",
+      });
+    }
+  }, [user, reset]);
+
 
   const onSubmit = (data) => {
-    console.log("Form Data:", data);
+    console.log("Form data:", data);
+    // TODO: Gửi dữ liệu lên backend
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-      <Card style={{ maxWidth: 900, margin: "auto", marginTop: 40 }}>
-        <div
-          style={{ display: "flex", alignItems: "center", marginBottom: 24 }}
-        >
-          <Avatar
-            size={80}
-            src="https://randomuser.me/api/portraits/women/68.jpg"
-          />
-          <div style={{ marginLeft: 16 }}>
-            <h2 style={{ marginBottom: 4 }}>Alexa Rawles</h2>
-            <p style={{ color: "#888" }}>alexarawles@gmail.com</p>
+    <div className="flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 px-10 py-5">
+      <Card style={{ width: "100%", padding: 24 }}>
+        <div className="flex items-center mb-6">
+          <Avatar size={80} src={user?.avatarUrl} />
+          <div className="ml-4">
+            <Title level={4} style={{ margin: 0 }}>
+              {user?.name}
+            </Title>
+            <Text type="secondary">{user?.email}</Text>
           </div>
         </div>
 
@@ -34,15 +69,15 @@ const Profile = () => {
                 control={control}
                 name="fullName"
                 label="Full Name"
-                placeholder="Your First Name"
+                placeholder="Enter full name"
               />
             </Col>
             <Col span={12}>
               <InputComponent
                 control={control}
-                name="nickName"
-                label="Nick Name"
-                placeholder="Your First Name"
+                name="email"
+                label="Email"
+                placeholder="Enter email"
               />
             </Col>
 
@@ -51,23 +86,48 @@ const Profile = () => {
                 control={control}
                 name="gender"
                 label="Gender"
-                placeholder="Your First Name"
                 options={[
-                  { label: "Male", value: "male" },
-                  { label: "Female", value: "female" },
-                  { label: "Other", value: "other" },
+                  { label: "Male", value: "MALE" },
+                  { label: "Female", value: "FEMALE" },
+                  { label: "Other", value: "OTHER" },
                 ]}
               />
             </Col>
             <Col span={12}>
               <InputComponent
                 control={control}
-                name="country"
-                label="Country"
-                placeholder="Your First Name"
+                name="phoneNumber"
+                label="Phone Number"
+                placeholder="Enter phone number"
+              />
+            </Col>
+
+            <Col span={24}>
+              <InputComponent
+                control={control}
+                name="address"
+                label="Address"
+                placeholder="Enter your address"
+              />
+            </Col>
+
+            <Col span={12}>
+              <InputComponent
+                control={control}
+                name="position"
+                label="Position"
+                placeholder="Enter your job title"
+              />
+            </Col>
+
+            <Col span={12}>
+              <InputComponent
+                control={control}
+                name="timeZone"
+                label="Time Zone"
                 options={[
-                  { label: "United States", value: "us" },
-                  { label: "Vietnam", value: "vn" },
+                  { label: "GMT+7", value: "gmt+7" },
+                  { label: "GMT-8", value: "gmt-8" },
                 ]}
               />
             </Col>
@@ -77,34 +137,33 @@ const Profile = () => {
                 control={control}
                 name="language"
                 label="Language"
-                placeholder="Your First Name"
                 options={[
                   { label: "English", value: "en" },
                   { label: "Vietnamese", value: "vi" },
                 ]}
               />
             </Col>
+
             <Col span={12}>
               <InputComponent
                 control={control}
-                name="timeZone"
-                label="Time Zone"
-                placeholder="Your First Name"
+                name="country"
+                label="Country"
                 options={[
-                  { label: "GMT+7", value: "gmt+7" },
-                  { label: "GMT-8", value: "gmt-8" },
+                  { label: "Vietnam", value: "vn" },
+                  { label: "United States", value: "us" },
                 ]}
               />
             </Col>
           </Row>
 
-          <div style={{ marginTop: 24 }}>
+          <div className="text-right mt-6">
             <Button
               type="primary"
               htmlType="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Save
+              Save Changes
             </Button>
           </div>
         </form>

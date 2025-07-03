@@ -1,55 +1,34 @@
-import React, { useState } from "react";
-import { Table, Input, Button, Space, Avatar, Typography, message, Popconfirm } from "antd";
+import React, { useEffect, useState } from "react";
+import { Table, Input, Button, Space, Avatar, Typography, message, Popconfirm, Spin } from "antd";
 import { EditOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import EditEmployeeModal from "./components/EditEmployeeModal";
-
+import { useUserService } from "../../services/userService";
 const { Title } = Typography;
 
-const employeesData = [
-  {
-    name: "Mauro Sicard",
-    role: "CEO & Founder",
-    email: "mauro@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-  },
-  {
-    name: "Sophie Le",
-    role: "Product Designer",
-    email: "sophie@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/women/65.jpg",
-  },
-  {
-    name: "David Tran",
-    role: "Frontend Developer",
-    email: "david@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/men/45.jpg",
-  },
-  {
-    name: "Linh Nguyen",
-    role: "HR Manager",
-    email: "linh@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/women/70.jpg",
-  },
-  {
-    name: "Alex Chu",
-    role: "Backend Engineer",
-    email: "alex@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/men/29.jpg",
-  },
-  {
-    name: "Trang Vo",
-    role: "Marketing Lead",
-    email: "trang@brix.com",
-    avatarUrl: "https://randomuser.me/api/portraits/women/20.jpg",
-  },
-];
-
 export default function StaffManagementPage() {
-  const [employees, setEmployees] = useState(employeesData);
+  const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  const { getAllUsers } = useUserService();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllUsers();
+        setEmployees(data || []);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        message.error("Không thể tải danh sách nhân viên");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  
   const handleEdit = (employee) => {
     setEditing(employee);
     setModalOpen(true);
@@ -73,6 +52,7 @@ export default function StaffManagementPage() {
   const filteredData = employees.filter((emp) =>
     emp.name.toLowerCase().includes(search.toLowerCase())
   );
+
 
   const columns = [
     {
@@ -128,12 +108,16 @@ export default function StaffManagementPage() {
         />
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="email"
-        pagination={{ pageSize: 5 }}
-      />
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+        />
+      )}
 
       <EditEmployeeModal
         open={modalOpen}
