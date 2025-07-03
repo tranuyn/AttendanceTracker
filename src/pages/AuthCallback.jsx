@@ -26,10 +26,12 @@ export default function AuthCallback() {
           navigate("/timesheet");
         } else {
           message.error("Không tìm thấy người dùng");
+          console.log(res);
           //logout({ returnTo: window.location.origin + "/login" });
         }
       } catch (err) {
         message.error("Đăng nhập thất bại, hãy trở lại sau");
+        console.log(res);
         //logout({ returnTo: window.location.origin + "/login" });
       }
     })();
