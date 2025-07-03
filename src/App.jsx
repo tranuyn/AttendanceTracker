@@ -13,7 +13,12 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile"
+          element={
+            <DashboardLayout role={role}>
+              <Profile />
+            </DashboardLayout>
+          } />
         <Route path="/staff-management" element={<StaffManagementPage />} />
         <Route
           path="/timesheet"

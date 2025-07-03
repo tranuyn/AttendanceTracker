@@ -341,7 +341,7 @@ export default function TimesheetApp() {
 
       case "reports":
         return (
-          <div className="max-w-6xl mx-auto space-y-6">
+          <div className="mx-auto space-y-6">
             <Card title="Bộ lọc báo cáo">
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={8}>
@@ -388,8 +388,8 @@ export default function TimesheetApp() {
   };
 
   return (
-    <div className="w-full bg-red-500 py-6 overflow-hidden">
-      <div className="flex justify-center  max-w-7xl  mb-4">
+    <div className="w-full bg-red-500 py-6 ">
+      <div className="flex justify-center mb-4">
         <Space>
           <Button
             type={currentView === "timesheet" ? "primary" : "default"}
@@ -413,7 +413,9 @@ export default function TimesheetApp() {
           )}
         </Space>
       </div>
-      {renderContent()}
+        <div className="px-4 relative"> {/* Wrap renderContent với padding */}
+          {renderContent()}
+        </div>
 
       <Modal
         title={editingRecord ? "Chỉnh sửa chấm công" : "Thêm chấm công"}

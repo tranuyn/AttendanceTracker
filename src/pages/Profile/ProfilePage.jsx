@@ -12,7 +12,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
       <Card style={{ maxWidth: 900, margin: "auto", marginTop: 40 }}>
         <div
           style={{ display: "flex", alignItems: "center", marginBottom: 24 }}

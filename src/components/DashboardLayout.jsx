@@ -65,14 +65,13 @@ const DashboardLayout = ({ children, role }) => {
   const currentMenu = menuItems[role] || menuItems.user;
 
   return (
-    <Layout style={{ minHeight: "100vh", minWidth: "100vw" }}>
+    <Layout style={{ minHeight: "100vh", width: "100vw" }}>
       <Sider
         collapsible
         width={200}
         style={{
           overflow: "auto",
           height: "100vh",
-          position: "fixed",
           left: 0,
           top: 0,
           bottom: 0,
@@ -94,17 +93,18 @@ const DashboardLayout = ({ children, role }) => {
         </div>
         <Menu mode="inline" theme="dark" items={currentMenu} />
       </Sider>
-      <Content
-        style={{
-          display: "flex",
-          flex: 1,
-          width: "100%",
-          marginLeft: 200,
-          padding: 5,
-        }}
-      >
-        {children}
-      </Content>
+      <Layout style={{ width: "100%" }} hasSider>
+        <Content
+          style={{
+            // marginLeft: 200,
+            padding: 10,
+            height: "100vh",
+            overflowX: "auto",
+          }}
+        >
+          {children}
+        </Content>
+      </Layout>
     </Layout>
   );
 };
