@@ -6,6 +6,7 @@ import TimesheetTable from "./components/TimesheetTable";
 import StaffTable from "./components/StaffTable";
 import ReportSection from "./components/ReportSection";
 import TimesheetFormModal from "./components/TimesheetFormModal";
+import ReportTimesheetModal from "./components/ReportTimesheetModal"; 
 
 export default function TimesheetPage() {
   const [currentView, setCurrentView] = useState("timesheet");
@@ -15,6 +16,9 @@ export default function TimesheetPage() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [userRole] = useState("admin");
+
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportRecord, setReportRecord] = useState(null);
 
   const { getAccessTokenSilently } = useAuth0();
 
@@ -151,6 +155,17 @@ export default function TimesheetPage() {
     setIsModalVisible(false);
   };
 
+  const openReportModal = (record) => {
+    setReportRecord(record);
+    setReportOpen(true);
+  };
+
+  const handleSendReport = (reportData) => {
+    console.log("Report gửi:", reportData);
+    // TODO: gửi lên BE
+    setReportOpen(false);
+  };
+
   const totalHours = timesheetData.reduce((sum, r) => sum + r.totalHours, 0);
   const avgHours =
     timesheetData.length > 0 ? totalHours / timesheetData.length : 0;
@@ -188,8 +203,15 @@ export default function TimesheetPage() {
               onAdd={handleAdd}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onReport={openReportModal}
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
+            />
+            <ReportTimesheetModal
+              open={reportOpen}
+              onCancel={() => setReportOpen(false)}
+              onSubmit={handleSendReport}
+              record={reportRecord}
             />
           </>
         );

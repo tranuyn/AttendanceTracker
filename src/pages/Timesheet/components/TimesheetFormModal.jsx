@@ -38,8 +38,8 @@ const TimesheetFormModal = ({
           <TimePicker format="HH:mm" style={{ width: "100%" }} />
         </Form.Item>
         <div className="flex justify-end space-x-2">
-          <Button color="danger" variant="filled" onClick={onCancel}>Hủy</Button>
-          <Button color="primary" variant="filled" htmlType="submit">
+          <Button onClick={onCancel}>Hủy</Button>
+          <Button type="primary" htmlType="submit">
             {editingRecord ? "Cập nhật" : "Thêm mới"}
           </Button>
         </div>

@@ -8,7 +8,7 @@ import Profile from "./pages/Profile/ProfilePage";
 
 function App() {
   // const role = localStorage.getItem("role") || "user";
-  const role = "admin";
+  const role = "staff";
   return (
     <Router>
       <Routes>

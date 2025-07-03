@@ -1,7 +1,6 @@
-import { Table, Card, Button, Space, DatePicker } from "antd";
+import { Table, Card, Button, Space, DatePicker, Tag } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import Tag from "antd/es/tag";
 import React from "react";
 
 const TimesheetTable = ({
@@ -9,8 +8,10 @@ const TimesheetTable = ({
   onAdd,
   onEdit,
   onDelete,
+  onReport, // mới
   selectedMonth,
   setSelectedMonth,
+  role = "staff", // truyền từ ngoài
 }) => {
   const columns = [
     {
@@ -34,18 +35,37 @@ const TimesheetTable = ({
       render: (status) => {
         const colorMap = { completed: "green", late: "orange", absent: "red" };
         const labelMap = { completed: "Hoàn thành", late: "Trễ", absent: "Vắng" };
-        return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>;
+
+        return (
+          <Space>
+            <Tag color={colorMap[status]}>{labelMap[status]}</Tag>
+          </Space>
+        );
       },
     },
     {
       title: "Hành động",
       key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button danger icon={<DeleteOutlined />} onClick={() => onDelete(record.key)} />
-        </Space>
-      ),
+      render: (_, record) =>{
+        const isReportable = record.status !== "completed";
+        return(
+          <Space>
+            <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
+            {role === "admin" && (
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => onDelete(record.key)}
+              />
+            )}
+            {role === "staff" && isReportable && (
+              <Button color="danger" variant="filled" onClick={() => onReport(record)}>
+                Báo lỗi
+              </Button>
+            )}
+          </Space>
+        )
+      } 
     },
   ];
 
