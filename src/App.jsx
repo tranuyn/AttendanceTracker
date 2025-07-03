@@ -9,7 +9,7 @@ import AuthCallback from "./pages/AuthCallback";
 
 function App() {
   // const role = localStorage.getItem("role") || "user";
-  const role = "admin";
+  const role = "staff";
   return (
     <Router>
       <Routes>
