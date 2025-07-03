@@ -18,7 +18,7 @@ createRoot(document.getElementById("root")).render(
         theme={{
           token: {
             colorPrimary: "#4B93CD",
-            fontFamily: 'Inter'
+            fontFamily: "Inter",
           },
         }}
       >
@@ -26,7 +26,7 @@ createRoot(document.getElementById("root")).render(
           domain={domain}
           clientId={clientId}
           authorizationParams={{
-            redirect_uri: window.location.origin + "/timesheet",
+            redirect_uri: window.location.origin + "/callback",
           }}
         >
           <Provider store={store}>

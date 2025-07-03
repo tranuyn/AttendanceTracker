@@ -6,7 +6,7 @@ import TimesheetTable from "./components/TimesheetTable";
 import StaffTable from "./components/StaffTable";
 import ReportSection from "./components/ReportSection";
 import TimesheetFormModal from "./components/TimesheetFormModal";
-import ReportTimesheetModal from "./components/ReportTimesheetModal"; 
+import ReportTimesheetModal from "./components/ReportTimesheetModal";
 
 export default function TimesheetPage() {
   const [currentView, setCurrentView] = useState("timesheet");
@@ -19,31 +19,6 @@ export default function TimesheetPage() {
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportRecord, setReportRecord] = useState(null);
-
-  const { getAccessTokenSilently } = useAuth0();
-
-  // Fake call để lấy thông tin user từ backend
-  const fetchUser = async () => {
-    try {
-      const token = await getAccessTokenSilently();
-      console.log("Access Token:", token);
-
-      const res = await fetch("http://localhost:8081/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const user = await res.json();
-      console.log("User info from backend:", user);
-    } catch (err) {
-      console.error("Lỗi lấy thông tin user:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   // Mock dữ liệu timesheet
   const mockTimesheetData = [
@@ -178,22 +153,38 @@ export default function TimesheetPage() {
             <Row gutter={[16, 16]} className="mb-4">
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic title="Tổng giờ làm" value={totalHours} suffix="h" />
+                  <Statistic
+                    title="Tổng giờ làm"
+                    value={totalHours}
+                    suffix="h"
+                  />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic title="Trung bình/ngày" value={avgHours.toFixed(1)} suffix="h" />
+                  <Statistic
+                    title="Trung bình/ngày"
+                    value={avgHours.toFixed(1)}
+                    suffix="h"
+                  />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic title="Số ngày làm" value={timesheetData.length} suffix="ngày" />
+                  <Statistic
+                    title="Số ngày làm"
+                    value={timesheetData.length}
+                    suffix="ngày"
+                  />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic title="Hiệu suất" value={((avgHours / 8) * 100).toFixed(0)} suffix="%" />
+                  <Statistic
+                    title="Hiệu suất"
+                    value={((avgHours / 8) * 100).toFixed(0)}
+                    suffix="%"
+                  />
                 </Card>
               </Col>
             </Row>
@@ -231,7 +222,8 @@ export default function TimesheetPage() {
     <div className="w-full py-6">
       <div className="flex justify-center mb-4">
         <Space>
-          <Button color="primary"
+          <Button
+            color="primary"
             type={currentView === "timesheet" ? "primary" : "default"}
             onClick={() => setCurrentView("timesheet")}
           >
@@ -254,9 +246,7 @@ export default function TimesheetPage() {
         </Space>
       </div>
 
-      <div className="px-4 relative">
-        {renderContent()}
-      </div>
+      <div className="px-4 relative">{renderContent()}</div>
 
       <TimesheetFormModal
         visible={isModalVisible}

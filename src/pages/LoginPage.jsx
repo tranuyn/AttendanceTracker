@@ -11,30 +11,6 @@ export default function LoginPage() {
     useAuth0();
   const onFinish = async () => {
     loginWithRedirect();
-
-    const token = await getAccessTokenSilently();
-
-    const res = await fetch("http://localhost:8081/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const user = await res.json();
-    console.log("User info from backend:", user);
-
-    // // Giả lập xác thực (có thể thay bằng API sau này)
-    // if (email === "admin@example.com" && password === "admin") {
-    //   localStorage.setItem("role", "admin");
-    //   message.success("Đăng nhập thành công với vai trò Admin!");
-    //   navigate("/timesheet");
-    // } else if (email === "user@example.com" && password === "user") {
-    //   localStorage.setItem("role", "user");
-    //   message.success("Đăng nhập thành công với vai trò User!");
-    //   navigate("/timesheet");
-    // } else {
-    //   message.error("Tài khoản hoặc mật khẩu không đúng!");
-    // }
   };
 
   return (
@@ -46,22 +22,6 @@ export default function LoginPage() {
         </div>
 
         <Form name="login" layout="vertical" onFinish={onFinish}>
-          {/* <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="Email" />
-          </Form.Item>
-
-          <Form.Item
-            label="Mật khẩu"
-            name="password"
-            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
-          </Form.Item> */}
-
           <Form.Item className="text-center">
             <Button
               type="primary"
