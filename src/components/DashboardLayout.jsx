@@ -1,27 +1,29 @@
 import { Layout, Menu } from "antd";
 import { useNavigate } from "react-router-dom";
-import {
-  UserOutlined,
-  ClockCircleOutlined,
-  FileOutlined,
-} from "@ant-design/icons";
+import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import FeedbackIcon from '@mui/icons-material/Feedback';
+import logo from "../assets/images/logo.png";
+import { useState } from "react";
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
 const DashboardLayout = ({ children, role }) => {
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = {
     user: [
       {
         key: "timesheet",
-        icon: <ClockCircleOutlined />,
+        icon: <CalendarMonthRoundedIcon />,
         label: "Timesheet",
         onClick: () => navigate("/timesheet"),
       },
       {
         key: "profile",
-        icon: <ClockCircleOutlined />,
+        icon: <ManageAccountsRoundedIcon />,
         label: "Profile",
         onClick: () => navigate("/profile"),
       },
@@ -29,33 +31,39 @@ const DashboardLayout = ({ children, role }) => {
     staff: [
       {
         key: "timesheet",
-        icon: <ClockCircleOutlined />,
+        icon: <CalendarMonthRoundedIcon />,
         label: "Timesheet",
         onClick: () => navigate("/timesheet"),
       },
       {
         key: "profile",
-        icon: <ClockCircleOutlined />,
+        icon: <ManageAccountsRoundedIcon />,
         label: "Profile",
         onClick: () => navigate("/profile"),
       },
     ],
     admin: [
       {
+        key: "timesheet",
+        icon: <CalendarMonthRoundedIcon />,
+        label: "Timesheet",
+        onClick: () => navigate("/timesheet"),
+      },
+      {
         key: "staff",
-        icon: <UserOutlined />,
+        icon: <GroupsRoundedIcon />,
         label: "Manage Staff",
         onClick: () => navigate("/manage-staff"),
       },
       {
         key: "report",
-        icon: <FileOutlined />,
+        icon: <FeedbackIcon />,
         label: "Reports",
         onClick: () => navigate("/reports"),
       },
       {
         key: "profile",
-        icon: <ClockCircleOutlined />,
+        icon: <ManageAccountsRoundedIcon />,
         label: "Profile",
         onClick: () => navigate("/profile"),
       },
@@ -65,39 +73,49 @@ const DashboardLayout = ({ children, role }) => {
   const currentMenu = menuItems[role] || menuItems.user;
 
   return (
-    <Layout style={{ minHeight: "100vh", width: "100vw" }}>
+    <Layout style={{ minHeight: "100vh", width: "100vw" }} >
       <Sider
         collapsible
-        width={200}
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        width={'17%'}
         style={{
           overflow: "auto",
           height: "100vh",
-          left: 0,
-          top: 0,
-          bottom: 0,
+          backgroundColor: 'white',
+          paddingTop: 15
         }}
       >
         <div
           style={{
             height: 64,
-            background: "#001529",
-            color: "white",
-            fontSize: 18,
-            fontWeight: "bold",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: collapsed ? "center" : "start",
+            gap: collapsed ? 0 : 15,
+            padding: collapsed ? 0 : 10,
           }}
         >
-          Logo/Brand
+          <img
+            src={logo}
+            alt="Logo"
+            style={{
+              maxHeight: "40px",
+              objectFit: "contain",
+              paddingLeft: collapsed ? 0 : 10,
+            }}
+          />
+          {!collapsed && (
+            <span style={{ color: "#28608e", fontWeight: "bold", fontSize: 16 }}>
+              Attendance Tracker
+            </span>
+          )}
         </div>
-        <Menu mode="inline" theme="dark" items={currentMenu} />
+        <Menu mode="inline" theme="light" items={currentMenu} className="font-normal text-md"/>
       </Sider>
       <Layout style={{ width: "100%" }} hasSider>
         <Content
           style={{
-            // marginLeft: 200,
-            padding: 10,
             height: "100vh",
             overflowX: "auto",
           }}

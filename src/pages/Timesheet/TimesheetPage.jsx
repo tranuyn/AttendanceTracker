@@ -1,51 +1,28 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  DatePicker,
-  Card,
-  Button,
-  Modal,
-  Form,
-  TimePicker,
-  message,
-  Statistic,
-  Row,
-  Col,
-  Tag,
-  Space,
-  Input,
-  Select,
-  Divider,
-} from "antd";
-import {
-  ClockCircleOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
-import dayjs from "dayjs";
+import { Row, Col, Card, Statistic, Button, Space, message, Form } from "antd";
 import { useAuth0 } from "@auth0/auth0-react";
+import dayjs from "dayjs";
+import TimesheetTable from "./components/TimesheetTable";
+import StaffTable from "./components/StaffTable";
+import ReportSection from "./components/ReportSection";
+import TimesheetFormModal from "./components/TimesheetFormModal";
 
-const { RangePicker } = DatePicker;
-const { Option } = Select;
-
-export default function TimesheetApp() {
+export default function TimesheetPage() {
   const [currentView, setCurrentView] = useState("timesheet");
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [timesheetData, setTimesheetData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
-  const [userRole] = useState("staff");
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const [userRole] = useState("admin");
+
+  const { getAccessTokenSilently } = useAuth0();
+
+  // Fake call để lấy thông tin user từ backend
   const fetchUser = async () => {
     try {
       const token = await getAccessTokenSilently();
-      console.log(token);
+      console.log("Access Token:", token);
 
       const res = await fetch("http://localhost:8081/me", {
         headers: {
@@ -62,9 +39,9 @@ export default function TimesheetApp() {
 
   useEffect(() => {
     fetchUser();
-  });
+  }, []);
 
-  // Mock data
+  // Mock dữ liệu timesheet
   const mockTimesheetData = [
     {
       key: "1",
@@ -118,80 +95,10 @@ export default function TimesheetApp() {
       totalHours: 162,
     },
   ];
+
   useEffect(() => {
     setTimesheetData(mockTimesheetData);
   }, []);
-
-  const timesheetColumns = [
-    {
-      title: "Ngày",
-      dataIndex: "date",
-      key: "date",
-      render: (date) => dayjs(date).format("DD/MM/YYYY"),
-    },
-    { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn" },
-    { title: "Giờ ra", dataIndex: "checkOut", key: "checkOut" },
-    {
-      title: "Tổng giờ",
-      dataIndex: "totalHours",
-      key: "totalHours",
-      render: (hours) => `${hours}h`,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const colorMap = {
-          completed: "green",
-          late: "orange",
-          absent: "red",
-        };
-        const labelMap = {
-          completed: "Hoàn thành",
-          late: "Trễ",
-          absent: "Vắng",
-        };
-        return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>;
-      },
-    },
-    {
-      title: "Hành động",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
-          />
-        </Space>
-      ),
-    },
-  ];
-
-  const staffColumns = [
-    { title: "Tên nhân viên", dataIndex: "name", key: "name" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phòng ban", dataIndex: "department", key: "department" },
-    {
-      title: "Tổng giờ tháng",
-      dataIndex: "totalHours",
-      key: "totalHours",
-      render: (hours) => `${hours}h`,
-    },
-    {
-      title: "Hành động",
-      key: "actions",
-      render: () => (
-        <Space>
-          <Button type="link">Chi tiết</Button>
-          <Button type="link">Chỉnh sửa</Button>
-        </Space>
-      ),
-    },
-  ];
 
   const handleAdd = () => {
     setEditingRecord(null);
@@ -252,135 +159,46 @@ export default function TimesheetApp() {
     switch (currentView) {
       case "timesheet":
         return (
-          <div className="mx-auto space-y-6">
-            <Row gutter={[16, 16]}>
+          <>
+            <Row gutter={[16, 16]} className="mb-4">
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic
-                    title="Tổng giờ làm"
-                    value={totalHours}
-                    suffix="h"
-                  />
+                  <Statistic title="Tổng giờ làm" value={totalHours} suffix="h" />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic
-                    title="Trung bình/ngày"
-                    value={avgHours.toFixed(1)}
-                    suffix="h"
-                  />
+                  <Statistic title="Trung bình/ngày" value={avgHours.toFixed(1)} suffix="h" />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic
-                    title="Số ngày làm"
-                    value={timesheetData.length}
-                    suffix="ngày"
-                  />
+                  <Statistic title="Số ngày làm" value={timesheetData.length} suffix="ngày" />
                 </Card>
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card>
-                  <Statistic
-                    title="Hiệu suất"
-                    value={((avgHours / 8) * 100).toFixed(0)}
-                    suffix="%"
-                  />
+                  <Statistic title="Hiệu suất" value={((avgHours / 8) * 100).toFixed(0)} suffix="%" />
                 </Card>
               </Col>
             </Row>
 
-            <Card
-              title="Bảng chấm công"
-              extra={
-                <Space>
-                  <DatePicker
-                    picker="month"
-                    value={selectedMonth}
-                    onChange={setSelectedMonth}
-                    allowClear={false}
-                  />
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={handleAdd}
-                  >
-                    Thêm mới
-                  </Button>
-                </Space>
-              }
-            >
-              <Table
-                columns={timesheetColumns}
-                dataSource={timesheetData}
-                pagination={{ pageSize: 10 }}
-              />
-            </Card>
-          </div>
+            <TimesheetTable
+              data={timesheetData}
+              onAdd={handleAdd}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+            />
+          </>
         );
 
       case "staff":
-        return (
-          <Card
-            title="Quản lý nhân sự"
-            extra={
-              <Button icon={<PlusOutlined />} type="primary">
-                Thêm nhân viên
-              </Button>
-            }
-          >
-            <Table
-              columns={staffColumns}
-              dataSource={mockStaffData}
-              pagination={{ pageSize: 10 }}
-            />
-          </Card>
-        );
+        return <StaffTable data={mockStaffData} />;
 
       case "reports":
-        return (
-          <div className="mx-auto space-y-6">
-            <Card title="Bộ lọc báo cáo">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}>
-                  <RangePicker style={{ width: "100%" }} />
-                </Col>
-                <Col xs={24} md={8}>
-                  <select className="w-full border p-2 rounded">
-                    <option>Tất cả phòng ban</option>
-                    <option value="it">IT</option>
-                    <option value="hr">HR</option>
-                    <option value="finance">Finance</option>
-                  </select>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Button type="primary" block>
-                    Tạo báo cáo
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-
-            <Card title="Thống kê tổng quan">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={6}>
-                  <Statistic title="Tổng nhân viên" value={25} />
-                </Col>
-                <Col xs={24} md={6}>
-                  <Statistic title="Có mặt hôm nay" value={23} />
-                </Col>
-                <Col xs={24} md={6}>
-                  <Statistic title="Đi trễ" value={2} />
-                </Col>
-                <Col xs={24} md={6}>
-                  <Statistic title="Vắng mặt" value={0} />
-                </Col>
-              </Row>
-            </Card>
-          </div>
-        );
+        return <ReportSection />;
 
       default:
         return null;
@@ -388,10 +206,10 @@ export default function TimesheetApp() {
   };
 
   return (
-    <div className="w-full bg-red-500 py-6 ">
+    <div className="w-full py-6">
       <div className="flex justify-center mb-4">
         <Space>
-          <Button
+          <Button color="primary"
             type={currentView === "timesheet" ? "primary" : "default"}
             onClick={() => setCurrentView("timesheet")}
           >
@@ -413,46 +231,18 @@ export default function TimesheetApp() {
           )}
         </Space>
       </div>
-        <div className="px-4 relative"> {/* Wrap renderContent với padding */}
-          {renderContent()}
-        </div>
 
-      <Modal
-        title={editingRecord ? "Chỉnh sửa chấm công" : "Thêm chấm công"}
-        open={isModalVisible}
+      <div className="px-4 relative">
+        {renderContent()}
+      </div>
+
+      <TimesheetFormModal
+        visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        footer={null}
-      >
-        <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item
-            name="date"
-            label="Ngày"
-            rules={[{ required: true, message: "Chọn ngày!" }]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="checkIn"
-            label="Giờ vào"
-            rules={[{ required: true, message: "Chọn giờ vào!" }]}
-          >
-            <TimePicker format="HH:mm" style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="checkOut"
-            label="Giờ ra"
-            rules={[{ required: true, message: "Chọn giờ ra!" }]}
-          >
-            <TimePicker format="HH:mm" style={{ width: "100%" }} />
-          </Form.Item>
-          <div className="flex justify-end space-x-2">
-            <Button onClick={() => setIsModalVisible(false)}>Hủy</Button>
-            <Button type="primary" htmlType="submit">
-              {editingRecord ? "Cập nhật" : "Thêm mới"}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        onSubmit={handleSubmit}
+        form={form}
+        editingRecord={editingRecord}
+      />
     </div>
   );
 }
