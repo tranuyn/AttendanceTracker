@@ -5,6 +5,7 @@ import StaffManagementPage from "./pages/StaffManagement/StaffManagementPage";
 import DashboardLayout from "./components/DashboardLayout";
 import ReportPage from "./pages/ReportPage";
 import Profile from "./pages/Profile/ProfilePage";
+import AuthCallback from "./pages/AuthCallback";
 
 function App() {
   // const role = localStorage.getItem("role") || "user";
@@ -13,12 +14,15 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/profile"
+        <Route path="/callback" element={<AuthCallback />} />
+        <Route
+          path="/profile"
           element={
             <DashboardLayout role={role}>
               <Profile />
             </DashboardLayout>
-          } />
+          }
+        />
         <Route path="/staff-management" element={<StaffManagementPage />} />
         <Route
           path="/timesheet"

@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { Auth0Provider } from "@auth0/auth0-react";
-import { ConfigProvider } from 'antd';
+import { ConfigProvider } from "antd";
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 const clientId = import.meta.env.VITE_AUTH0_CLIENTID;
@@ -16,7 +16,7 @@ createRoot(document.getElementById("root")).render(
         theme={{
           token: {
             colorPrimary: "#4B93CD",
-            fontFamily: 'Inter'
+            fontFamily: "Inter",
           },
         }}
       >
@@ -24,7 +24,7 @@ createRoot(document.getElementById("root")).render(
           domain={domain}
           clientId={clientId}
           authorizationParams={{
-            redirect_uri: window.location.origin + "/timesheet",
+            redirect_uri: window.location.origin + "/callback",
           }}
         >
           <App />
