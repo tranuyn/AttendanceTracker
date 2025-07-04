@@ -12,7 +12,7 @@ export default function StaffManagementPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const { getAllUsers } = useUserService();
+  const { getAllUsers, updateUser } = useUserService();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,22 +34,31 @@ export default function StaffManagementPage() {
     setModalOpen(true);
   };
 
-  const handleSave = (updated) => {
-    const updatedList = employees.map((emp) =>
-      emp.email === updated.email ? updated : emp
-    );
-    setEmployees(updatedList);
-    message.success("Cập nhật thành công!");
-    setModalOpen(false);
+  const handleSave = async (updated) => {
+    try {
+      const response = await updateUser(updated.id, updated);
+      const updatedList = employees.map((emp) =>
+        emp.id === updated.id ? response : emp
+      );
+      setEmployees(updatedList);
+      message.success("Cập nhật thành công!");
+    } catch (err) {
+      console.error(err);
+      message.error("Cập nhật thất bại");
+    } finally {
+      setModalOpen(false);
+    }
   };
 
   const handleDelete = (email) => {
-    const filtered = employees.filter((emp) => emp.email !== email);
+    const filtered = employees?.filter((emp) => emp.email !== email);
     setEmployees(filtered);
     message.success("Đã xóa nhân viên.");
   };
-
-  const filteredData = employees.filter((emp) =>
+  
+  let filteredData = [];
+  if (employees)
+    filteredData = employees?.filter((emp) =>
     emp.name.toLowerCase().includes(search.toLowerCase())
   );
 

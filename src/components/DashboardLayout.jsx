@@ -1,11 +1,13 @@
 import { Layout, Menu } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import FeedbackIcon from '@mui/icons-material/Feedback';
+import CameraFrontRoundedIcon from '@mui/icons-material/CameraFrontRounded';
 import logo from "../assets/images/logo.png";
-import { useState } from "react";
 
 const { Sider, Content } = Layout;
 
@@ -15,6 +17,12 @@ const DashboardLayout = ({ children, role }) => {
 
   const menuItems = {
     user: [
+      {
+        key: "attendance",
+        icon: <CameraFrontRoundedIcon />,
+        label: 'Check-in/Check-out',
+        onClick: () => navigate("/attendance"),
+      },
       {
         key: "timesheet",
         icon: <CalendarMonthRoundedIcon />,
@@ -43,6 +51,12 @@ const DashboardLayout = ({ children, role }) => {
       },
     ],
     admin: [
+      {
+        key: "attendance",
+        icon: <CameraFrontRoundedIcon />,
+        label: 'Attendance',
+        onClick: () => navigate("/attendance"),
+      },
       {
         key: "timesheet",
         icon: <CalendarMonthRoundedIcon />,
@@ -78,7 +92,7 @@ const DashboardLayout = ({ children, role }) => {
         collapsible
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
-        width={'17%'}
+        width={200}
         style={{
           overflow: "auto",
           height: "100vh",

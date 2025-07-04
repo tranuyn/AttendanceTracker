@@ -1,5 +1,8 @@
-import { Modal, Form, Input } from "antd";
-import React, { useEffect } from "react";
+import { Modal, Form, Input, Select } from "antd";
+import { genderOptions } from "common/enums/Gender";
+import { roleOptions } from "common/enums/Role";
+import { useEffect } from "react";
+
 
 export default function EditEmployeeModal({ open, onCancel, onSave, employee }) {
   const [form] = Form.useForm();
@@ -8,7 +11,7 @@ export default function EditEmployeeModal({ open, onCancel, onSave, employee }) 
     if (employee) {
       form.setFieldsValue(employee);
     }
-  }, [employee]);
+  }, [employee, form]);
 
   const handleOk = () => {
     form.validateFields().then((values) => {
@@ -30,10 +33,32 @@ export default function EditEmployeeModal({ open, onCancel, onSave, employee }) 
         <Form.Item label="Tên" name="name" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
+
         <Form.Item label="Email" name="email" rules={[{ required: true, type: "email" }]}>
+          <Input disabled /> {/* Email không cho sửa để đảm bảo tính unique */}
+        </Form.Item>
+
+        <Form.Item label="Chức vụ" name="position">
           <Input />
         </Form.Item>
-        <Form.Item label="Chức vụ" name="role" rules={[{ required: true }]}>
+
+        <Form.Item label="Số điện thoại" name="phoneNumber">
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Địa chỉ" name="address">
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Giới tính" name="gender">
+          <Select options={genderOptions} placeholder="Chọn giới tính" />
+        </Form.Item>
+
+        <Form.Item label="Vai trò" name="role" rules={[{ required: true }]}>
+          <Select options={roleOptions} />
+        </Form.Item>
+
+        <Form.Item label="Avatar URL" name="avatarUrl">
           <Input />
         </Form.Item>
       </Form>

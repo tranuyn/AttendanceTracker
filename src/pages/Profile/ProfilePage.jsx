@@ -50,8 +50,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 px-10 py-5">
-      <Card style={{ width: "100%", padding: 24 }}>
+    <div className="flex items-center justify-center px-10 py-5">
+      <Card style={{ width: "100%", padding: 5 }}>
         <div className="flex items-center mb-6">
           <Avatar size={80} src={user?.avatarUrl} />
           <div className="ml-4">
@@ -89,7 +89,6 @@ const Profile = () => {
                 options={[
                   { label: "Male", value: "MALE" },
                   { label: "Female", value: "FEMALE" },
-                  { label: "Other", value: "OTHER" },
                 ]}
               />
             </Col>
@@ -120,41 +119,19 @@ const Profile = () => {
               />
             </Col>
 
-            <Col span={12}>
-              <InputComponent
-                control={control}
-                name="timeZone"
-                label="Time Zone"
-                options={[
-                  { label: "GMT+7", value: "gmt+7" },
-                  { label: "GMT-8", value: "gmt-8" },
-                ]}
-              />
-            </Col>
 
             <Col span={12}>
               <InputComponent
                 control={control}
-                name="language"
-                label="Language"
+                name="role"
+                label="Role"
                 options={[
-                  { label: "English", value: "en" },
-                  { label: "Vietnamese", value: "vi" },
+                  { label: "Staff", value: "staff" },
+                  { label: "Admin", value: "admin" },
                 ]}
               />
             </Col>
 
-            <Col span={12}>
-              <InputComponent
-                control={control}
-                name="country"
-                label="Country"
-                options={[
-                  { label: "Vietnam", value: "vn" },
-                  { label: "United States", value: "us" },
-                ]}
-              />
-            </Col>
           </Row>
 
           <div className="text-right mt-6">

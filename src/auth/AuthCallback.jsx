@@ -12,6 +12,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     if (isLoading) return;
+    
     if (!isAuthenticated) {
       return navigate("/login");
     }
@@ -26,13 +27,17 @@ export default function AuthCallback() {
         if (res.ok) {
           const user = await res.json();
           dispatch(setUser(user));
-          navigate("/timesheet");
+          
+          // Redirect based on role or default to timesheet
+          const redirectTo = user.role === 'admin' ? '/timesheet' : '/attendance';
+          navigate(redirectTo);
         } else {
           message.error("Không tìm thấy người dùng");
           dispatch(clearUser());
           logout({ returnTo: window.location.origin + "/login" });
         }
       } catch (err) {
+        console.error("Auth callback error:", err);
         message.error("Đăng nhập thất bại, hãy thử lại sau");
         dispatch(clearUser());
         logout({ returnTo: window.location.origin + "/login" });
@@ -40,5 +45,14 @@ export default function AuthCallback() {
     })();
   }, [isAuthenticated, isLoading, getIdTokenClaims, logout, navigate, dispatch]);
 
-  return <div>Đang xác thực...</div>;
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh' 
+    }}>
+      <div>Đang xác thực...</div>
+    </div>
+  );
 }

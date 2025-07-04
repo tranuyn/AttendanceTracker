@@ -22,7 +22,7 @@ async function withTimeout(promise, ms) {
 }
 
 export function useApi() {
-  const { getIdTokenClaims } = useAuth0();
+  const { getIdTokenClaims, isAuthenticated, isLoading } = useAuth0();
 
   async function request(path, { method = "GET", data, params } = {}) {
     let url = apiConfig.baseUrl.replace(/\/+$/, "") + path;
@@ -31,13 +31,25 @@ export function useApi() {
       url += "?" + qs;
     }
     
+    // Kiểm tra trạng thái Auth0 trước khi gọi API
+    if (isLoading) {
+      throw new Error("Auth is still loading");
+    }
+    
+    if (!isAuthenticated) {
+      window.location.href = "/login";
+      return;
+    }
+
     let token;
     try {
       token = await getIdTokenClaims();
       if (!token) throw new Error("No token");
-    } catch {
+    } catch (error) {
+      console.error("Token error:", error);
+      // Thay vì redirect ngay, có thể retry hoặc thông báo lỗi
       window.location.href = "/login";
-      return; // dừng tiếp
+      return;
     }
 
     const opts = {
@@ -57,7 +69,7 @@ export function useApi() {
     try {
       res = await withTimeout(fetch(url, opts), TIMEOUT);
     } catch (err) {
-      console.error(err);
+      console.error("Request error:", err);
       throw err;
     }
 
@@ -85,17 +97,3 @@ export function useApi() {
 
   return { get, post, postForm, put, patch, del };
 }
-
-//  How to use
-// function MyComponent() {
-//   const { get, post } = useApi();
-
-//   useEffect(() => {
-//     async function load() {
-//       const data = await get("/my-endpoint", { q: "test" });
-//       console.log(data);
-//     }
-//     load();
-//   }, []);
-//   // ...
-// }
