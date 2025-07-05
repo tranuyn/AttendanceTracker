@@ -27,7 +27,6 @@ export function useAttendanceService() {
     const startOfWeek = dayjs().startOf('week').format('YYYY-MM-DD');
     const endOfWeek = dayjs().endOf('week').format('YYYY-MM-DD');
     return await get(`/attendance/filter?userId=${userId}`);
-    // Giả sử bạn sẽ lọc thủ công ở FE từ API `/filter` (vì API /me không hỗ trợ userId)
   };
 
   return { checkInWithImage,
