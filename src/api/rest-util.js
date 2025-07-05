@@ -93,7 +93,7 @@ export function useApi() {
     request(path, { method: "POST", data: formData });
   const put = (path, data) => request(path, { method: "PUT", data });
   const patch = (path, data) => request(path, { method: "PATCH", data });
-  const del = (path, data) => request(path, { method: "DELETE", data });
+  const del = (path, params) => request(path, { method: "DELETE", params });
 
   return { get, post, postForm, put, patch, del };
 }

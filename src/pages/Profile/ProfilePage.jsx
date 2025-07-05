@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "store/userSlice";
 import { InputComponent } from "../../components/InputComponent";
 import { useProfileService } from "../../services/profileService";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -33,6 +35,7 @@ const Profile = () => {
       position: "",
       role: "",
       avatarUrl: "",
+      dateOfBirth: null,
     },
   });
   const watchedName = watch("fullName");
@@ -48,6 +51,7 @@ const Profile = () => {
         position: user.position || "",
         role: user.role || "",
         avatarUrl: user.avatarUrl || "",
+        dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null,
       });
     }
   }, [user, reset]);
@@ -83,6 +87,7 @@ const Profile = () => {
         position: normalizeEmpty(formData.position),
         role: normalizeEmpty(formData.role),
         avatarUrl,
+        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth.toISOString() : null,
       };
 
       await updateProfile(payload);
@@ -178,6 +183,19 @@ const Profile = () => {
                 rules={{ required: "Vui lòng chọn giới tính" }}
               />
             </Col>
+            <Col span={12}>
+              <InputComponent
+                control={control}
+                name="dateOfBirth"
+                label="Ngày sinh"
+                type="date"
+                placeholder="Chọn ngày sinh"
+                rules={{
+                  required: "Vui lòng chọn ngày sinh",
+                }}
+              />
+            </Col>
+
             <Col span={12}>
               <InputComponent
                 control={control}

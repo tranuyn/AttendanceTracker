@@ -24,6 +24,16 @@ export default {
         },
       },
     },
+    screens: {
+      'xs': '480px',     // Điện thoại nhỏ
+      'sm': '640px',     // Điện thoại phổ thông
+      'md': '768px',     // Tablet
+      'lg': '1024px',    // Laptop
+      'xl': '1280px',    // Desktop lớn
+      '2xl': '1536px',   // Màn hình lớn hơn
+      '3xl': '1920px',   // 2K/Full HD++
+      '4xl': '2560px',   // 2K - 4K
+    },
   },
   plugins: [],
   corePlugins: {

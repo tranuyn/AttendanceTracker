@@ -30,8 +30,7 @@ function App() {
       <AuthWrapper>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/callback" element={<AuthCallback />} />
-          
+        
           {/* Protected Routes */}
           <Route
             path="/profile"

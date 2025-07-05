@@ -1,67 +1,115 @@
+// StaffManagementPage.jsx
 import React, { useEffect, useState } from "react";
-import { Table, Input, Button, Space, Avatar, Typography, message, Popconfirm, Spin } from "antd";
-import { EditOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Input,
+  Button,
+  Space,
+  Avatar,
+  Typography,
+  Popconfirm,
+  Spin,
+} from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  UserOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import EditEmployeeModal from "./components/EditEmployeeModal";
 import { useUserService } from "../../services/userService";
+import useApp from "antd/es/app/useApp";
+import SearchBar from "components/SearchBar";
+
 const { Title } = Typography;
 
 export default function StaffManagementPage() {
+  const { message } = useApp();
   const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
 
-  const { getAllUsers, updateUser } = useUserService();
+  const { getAllUsers, updateUser, deleteUser, createUser, getUsers } = useUserService();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getAllUsers();
-        setEmployees(data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        message.error("Không thể tải danh sách nhân viên");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    fetchUsers(pagination.current, pagination.pageSize, search);
   }, []);
-  
+
+  const fetchUsers = async (page = 1, pageSize = 5, searchkey = "") => {
+    setLoading(true);
+    try {
+      const res = await getUsers({
+        page: page - 1, // Spring bắt đầu từ 0
+        size: pageSize,
+        sort: "name,asc",
+        searchkey,
+      });
+      console.log("getUsers response", res);
+
+
+      setEmployees(res.content || []);
+      setPagination({
+        current: res.number + 1,
+        pageSize: res.size,
+        total: res.totalElements,
+      });
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      message.error("Không thể tải danh sách nhân viên");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    console.log(value)
+    fetchUsers(1, pagination.pageSize, value);
+  };
+
   const handleEdit = (employee) => {
     setEditing(employee);
     setModalOpen(true);
   };
 
-  const handleSave = async (updated) => {
+  const handleSave = async (values) => {
     try {
-      const response = await updateUser(updated.id, updated);
-      const updatedList = employees.map((emp) =>
-        emp.id === updated.id ? response : emp
-      );
-      setEmployees(updatedList);
-      message.success("Cập nhật thành công!");
+      if (editing) {
+        const response = await updateUser(editing.id, values);
+        const updatedList = employees.map((emp) =>
+          emp.id === editing.id ? response : emp
+        );
+        setEmployees(updatedList);
+        message.success("Cập nhật thành công!");
+      } else {
+        const newUser = await createUser(values);
+        setEmployees((prev) => [...prev, newUser]);
+        message.success("Tạo nhân viên thành công!");
+      }
     } catch (err) {
-      console.error(err);
-      message.error("Cập nhật thất bại");
+      console.error("Save user error:", err);
+      message.error("Thao tác thất bại!");
     } finally {
       setModalOpen(false);
     }
   };
 
-  const handleDelete = (email) => {
-    const filtered = employees?.filter((emp) => emp.email !== email);
-    setEmployees(filtered);
-    message.success("Đã xóa nhân viên.");
+  const handleDelete = async (id) => {
+    try {
+      await deleteUser(id);
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+      message.success("Xóa nhân viên thành công!");
+    } catch (err) {
+      console.error("Delete user error:", err);
+      message.error("Xóa nhân viên thất bại!");
+    }
   };
-  
-  let filteredData = [];
-  if (employees)
-    filteredData = employees?.filter((emp) =>
-    emp.name.toLowerCase().includes(search.toLowerCase())
-  );
-
 
   const columns = [
     {
@@ -78,7 +126,7 @@ export default function StaffManagementPage() {
       ),
     },
     {
-      title: "Chức vụ",
+      title: "Vai trò",
       dataIndex: "role",
       key: "role",
     },
@@ -94,7 +142,7 @@ export default function StaffManagementPage() {
           />
           <Popconfirm
             title="Xác nhận xóa?"
-            onConfirm={() => handleDelete(record.email)}
+            onConfirm={() => handleDelete(record.id)}
             okText="Xóa"
             cancelText="Hủy"
           >
@@ -107,14 +155,25 @@ export default function StaffManagementPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <Title level={3} style={{ margin: 0 }}>Quản lý nhân viên</Title>
-        <Input.Search
-          placeholder="Tìm theo tên nhân viên..."
-          allowClear
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ width: 300 }}
-        />
+      <div className="flex max-md:flex-col items-center justify-between mb-4">
+        <Title level={3} className="max-md:self-start max-md:mb-5 m-0 ">
+          Quản lý nhân viên
+        </Title>
+        <div className="flex gap-2 max-sm:flex-col ">
+          <SearchBar
+            onSearch={handleSearchChange}
+          />
+          <Button
+            icon={<PlusOutlined />}
+            type="primary"
+            onClick={() => {
+              setEditing(null);
+              setModalOpen(true);
+            }}
+          >
+            Thêm nhân viên
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -122,9 +181,17 @@ export default function StaffManagementPage() {
       ) : (
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={employees}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+          }}
+          onChange={(pagination) => {
+            fetchUsers(pagination.current, pagination.pageSize, search);
+          }}
         />
       )}
 

@@ -1,6 +1,7 @@
 // components/InputComponent.jsx
-import { Input, Select } from "antd";
+import { Input, Select, DatePicker } from "antd";
 import { Controller } from "react-hook-form";
+import dayjs from "dayjs";
 
 const { Option } = Select;
 
@@ -14,6 +15,7 @@ export const InputComponent = ({
   rules = {},
 }) => {
   const isSelect = Array.isArray(options);
+  const isDate = type === "date";
 
   return (
     <div style={{ marginBottom: 16 }}>
@@ -22,27 +24,52 @@ export const InputComponent = ({
         name={name}
         control={control}
         rules={rules}
-        render={({ field, fieldState: { error } }) =>
-          isSelect ? (
-            <>
-              <Select
-                {...field}
-                placeholder={placeholder}
-                style={{ width: "100%" }}
-              >
-                {options.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-              {error && (
-                <div style={{ color: "red", fontSize: 13, marginTop: 4 }}>
-                  {error.message}
-                </div>
-              )}
-            </>
-          ) : (
+        render={({ field, fieldState: { error } }) => {
+          if (isSelect) {
+            return (
+              <>
+                <Select
+                  {...field}
+                  placeholder={placeholder}
+                  style={{ width: "100%" }}
+                  value={field.value || undefined}
+                >
+                  {options.map((opt) => (
+                    <Option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </Option>
+                  ))}
+                </Select>
+                {error && (
+                  <div style={{ color: "red", fontSize: 13, marginTop: 4 }}>
+                    {error.message}
+                  </div>
+                )}
+              </>
+            );
+          }
+
+          if (isDate) {
+            return (
+              <>
+                <DatePicker
+                  {...field}
+                  placeholder={placeholder}
+                  format="DD/MM/YYYY"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(date) => field.onChange(date)}
+                  style={{ width: "100%" }}
+                />
+                {error && (
+                  <div style={{ color: "red", fontSize: 13, marginTop: 4 }}>
+                    {error.message}
+                  </div>
+                )}
+              </>
+            );
+          }
+
+          return (
             <>
               <Input
                 {...field}
@@ -55,8 +82,8 @@ export const InputComponent = ({
                 </div>
               )}
             </>
-          )
-        }
+          );
+        }}
       />
     </div>
   );
