@@ -32,9 +32,7 @@ export default function AuthWrapper({ children }) {
           if (res.id) {
             dispatch(setUser(res));
           } else {
-            message.error(
-              res?.error || "Không thể tải thông tin người dùng"
-            );
+            message.error(res?.error || "Không thể tải thông tin người dùng");
             dispatch(clearUser());
             await new Promise((resolve) => setTimeout(resolve, 1000));
             logout({ returnTo: window.location.origin + "/login" });

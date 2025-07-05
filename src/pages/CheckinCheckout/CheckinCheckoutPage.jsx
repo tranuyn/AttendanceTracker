@@ -1,14 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Button, Card, Select, Space, Image, Typography, message } from "antd";
+import { useAttendanceService } from "../../services/attendanceService";
+import useApp from "antd/es/app/useApp";
 
 const { Option } = Select;
 const { Title } = Typography;
 
 export default function CheckinCheckoutPage() {
+  const { message } = useApp();
   const [mode, setMode] = useState("checkin");
   const [hasPhoto, setHasPhoto] = useState(false);
   const [photoDataUrl, setPhotoDataUrl] = useState(null);
-
+  const { checkInWithImage, checkOutWithImage } = useAttendanceService();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -56,25 +59,48 @@ export default function CheckinCheckoutPage() {
     startCamera();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!photoDataUrl) {
       message.error("Bạn cần chụp ảnh trước khi gửi");
       return;
     }
 
-    // TODO: gọi API gửi ảnh + mode (checkin/checkout)
-    console.log("Gửi ảnh:", { mode, photo: photoDataUrl });
+    console.log("bấm");
 
-    message.success(`${mode === "checkin" ? "Check-in" : "Check-out"} thành công!`);
-    setHasPhoto(false);
-    setPhotoDataUrl(null);
-    startCamera();
+    try {
+      const formData = new FormData();
+      const blob = await (await fetch(photoDataUrl)).blob();
+      const fieldName = mode === "checkin" ? "checkInImage" : "checkOutImage";
+      formData.append(fieldName, blob, `${fieldName}.png`);
+
+      const response =
+        mode === "checkin"
+          ? await checkInWithImage(formData)
+          : await checkOutWithImage(formData);
+
+      if (response.status === "ERROR") {
+        message.error(response.message);
+        return;
+      }
+
+      message.success(
+        `${mode === "checkin" ? "Check-in" : "Check-out"} thành công!`
+      );
+    } catch (error) {
+      message.error("Gửi ảnh thất bại");
+    } finally {
+      setHasPhoto(false);
+      setPhotoDataUrl(null);
+      startCamera();
+    }
   };
 
   return (
     <div className="p-5 flex justify-center">
       <Card style={{ width: "100%" }}>
-        <Title level={4} className="mt-0 mb-2">Chấm công</Title>
+        <Title level={4} className="mt-0 mb-2">
+          Chấm công
+        </Title>
 
         <Space className="mb-5">
           <span className="font-bold">Loại:</span>
@@ -86,14 +112,9 @@ export default function CheckinCheckoutPage() {
 
         {!hasPhoto ? (
           <div className="relative w-[90%] max-w-[700px] mx-auto">
-            <video
-              ref={videoRef}
-              autoPlay
-              className="w-full rounded-lg"
-            />
+            <video ref={videoRef} autoPlay className="w-full rounded-lg" />
             <canvas ref={canvasRef} hidden />
           </div>
-
         ) : (
           <div className="mb-3">
             <Image src={photoDataUrl} alt="Preview" width={"90%"} />
