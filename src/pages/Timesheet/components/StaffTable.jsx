@@ -1,4 +1,5 @@
 import { Table, Card, Button, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import React from "react";
 
 const StaffTable = ({ data }) => {
@@ -27,9 +28,17 @@ const StaffTable = ({ data }) => {
   return (
     <Card
       title="Quản lý nhân sự"
-      extra={<Button icon={<PlusOutlined />} type="primary">Thêm nhân viên</Button>}
+      extra={
+        <Button icon={<PlusOutlined />} type="primary">
+          Thêm nhân viên
+        </Button>
+      }
     >
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{ pageSize: 10 }}
+      />
     </Card>
   );
 };
