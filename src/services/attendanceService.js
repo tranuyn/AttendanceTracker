@@ -11,5 +11,8 @@ export function useAttendanceService() {
     return await post("/attendance/checkout");
   };
 
-  return { checkInWithImage, checkOutWithImage };
+  const getReportMonthly = (params) =>
+    get("/attendance/report/monthly", params);
+
+  return { checkInWithImage, checkOutWithImage, getReportMonthly };
 }
