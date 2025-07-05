@@ -4,7 +4,7 @@ export function useUserService() {
   const { get, patch } = useApi();
 
   const getMe = async () => {
-    return await get("/me");
+    return await get("/users/me");
   };
 
   const getAllUsers = async () => {

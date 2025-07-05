@@ -29,14 +29,10 @@ export default function AuthWrapper({ children }) {
       (async () => {
         try {
           const res = await getMe();
-          if (res.ok) {
-            const user = await res.json();
-            dispatch(setUser(user));
+          if (res.id) {
+            dispatch(setUser(res));
           } else {
-            const errorBody = await res.json();
-            message.error(
-              errorBody?.error || "Không thể tải thông tin người dùng"
-            );
+            message.error(res?.error || "Không thể tải thông tin người dùng");
             dispatch(clearUser());
             await new Promise((resolve) => setTimeout(resolve, 1000));
             logout({ returnTo: window.location.origin + "/login" });
