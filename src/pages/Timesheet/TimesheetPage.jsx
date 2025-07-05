@@ -3,10 +3,10 @@ import { Row, Col, Card, Statistic, Button, Space, message, Form } from "antd";
 import { useAuth0 } from "@auth0/auth0-react";
 import dayjs from "dayjs";
 import TimesheetTable from "./components/TimesheetTable";
-import StaffTable from "./components/StaffTable";
 import ReportSection from "./components/ReportSection";
 import TimesheetFormModal from "./components/TimesheetFormModal";
 import ReportTimesheetModal from "./components/ReportTimesheetModal";
+import { useAttendanceService } from "services/attendanceService";
 
 export default function TimesheetPage() {
   const [currentView, setCurrentView] = useState("timesheet");
@@ -15,41 +15,48 @@ export default function TimesheetPage() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
-  const [userRole] = useState("admin");
+  const [userRole] = useState("staff");
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportRecord, setReportRecord] = useState(null);
 
-  // Mock dữ liệu timesheet
-  const mockTimesheetData = [
-    {
-      key: "1",
-      date: "2025-06-01",
-      checkIn: "08:00",
-      checkOut: "17:00",
-      totalHours: 8,
-      status: "completed",
-      employee: "Nguyễn Văn A",
-    },
-    {
-      key: "2",
-      date: "2025-06-02",
-      checkIn: "08:15",
-      checkOut: "17:05",
-      totalHours: 7.8,
-      status: "completed",
-      employee: "Nguyễn Văn A",
-    },
-    {
-      key: "3",
-      date: "2025-06-03",
-      checkIn: "08:30",
-      checkOut: "16:45",
-      totalHours: 7.25,
-      status: "late",
-      employee: "Nguyễn Văn A",
-    },
-  ];
+  const { getMyWeeklyAttendance } = useAttendanceService();
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      if (userRole === "staff") {
+        try {
+          const response = await getMyWeeklyAttendance();
+          const data = response || [];
+
+          const transformed = data.map((item, index) => {
+            const checkInTime = dayjs(item.checkIn);
+            const checkOutTime = item.checkOut ? dayjs(item.checkOut) : null;
+            const totalHours = checkOutTime
+              ? checkOutTime.diff(checkInTime, "minute") / 60
+              : 0;
+
+            return {
+              key: item.id || index.toString(),
+              ...item,
+              date: dayjs(item.checkIn).format("YYYY-MM-DD"),
+              checkIn: checkInTime.format("HH:mm"),
+              checkOut: checkOutTime ? checkOutTime.format("HH:mm") : "--:--",
+              totalHours: Math.round(totalHours * 100) / 100,
+              status: totalHours >= 8 ? "completed" : "late",
+              employee: item.user?.name || "Tôi",
+            };
+          });
+          console.log(transformed)
+          setTimesheetData(transformed);
+        } catch (error) {
+          message.error("Không thể tải dữ liệu điểm danh tuần này");
+        }
+      }
+    };
+
+    fetchAttendance();
+  }, [userRole]);
 
   const mockStaffData = [
     {
@@ -74,10 +81,6 @@ export default function TimesheetPage() {
       totalHours: 162,
     },
   ];
-
-  useEffect(() => {
-    setTimesheetData(mockTimesheetData);
-  }, []);
 
   const handleAdd = () => {
     setEditingRecord(null);
@@ -207,9 +210,6 @@ export default function TimesheetPage() {
           </>
         );
 
-      case "staff":
-        return <StaffTable data={mockStaffData} />;
-
       case "reports":
         return <ReportSection />;
 
@@ -235,14 +235,6 @@ export default function TimesheetPage() {
           >
             Báo cáo
           </Button>
-          {userRole === "admin" && (
-            <Button
-              type={currentView === "staff" ? "primary" : "default"}
-              onClick={() => setCurrentView("staff")}
-            >
-              Nhân sự
-            </Button>
-          )}
         </Space>
       </div>
 

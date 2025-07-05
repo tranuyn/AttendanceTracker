@@ -4,7 +4,7 @@ export const Gender = {
 };
 
 export const genderOptions = [
-  { label: "Nam", value: 'Male' },
+  { label: "Nam", value: Gender.MALE },
   { label: "Nữ", value: Gender.FEMALE },
 ];
 
