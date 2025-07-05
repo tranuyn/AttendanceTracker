@@ -11,28 +11,50 @@ export const InputComponent = ({
   placeholder,
   type = "text",
   options,
+  rules = {},
 }) => {
+  const isSelect = Array.isArray(options);
+
   return (
     <div style={{ marginBottom: 16 }}>
       <label style={{ fontWeight: 500 }}>{label}</label>
       <Controller
         name={name}
         control={control}
-        render={({ field }) =>
-          Array.isArray(options) ? (
-            <Select
-              {...field}
-              placeholder={placeholder}
-              style={{ width: "100%" }}
-            >
-              {options.map((opt) => (
-                <Option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </Option>
-              ))}
-            </Select>
+        rules={rules}
+        render={({ field, fieldState: { error } }) =>
+          isSelect ? (
+            <>
+              <Select
+                {...field}
+                placeholder={placeholder}
+                style={{ width: "100%" }}
+              >
+                {options.map((opt) => (
+                  <Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Option>
+                ))}
+              </Select>
+              {error && (
+                <div style={{ color: "red", fontSize: 13, marginTop: 4 }}>
+                  {error.message}
+                </div>
+              )}
+            </>
           ) : (
-            <Input {...field} placeholder={placeholder} type={type} />
+            <>
+              <Input
+                {...field}
+                placeholder={placeholder}
+                type={type}
+              />
+              {error && (
+                <div style={{ color: "red", fontSize: 13, marginTop: 4 }}>
+                  {error.message}
+                </div>
+              )}
+            </>
           )
         }
       />

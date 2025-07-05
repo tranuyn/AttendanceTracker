@@ -12,7 +12,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),     // thêm alias "@"
-      "common": path.resolve(__dirname, "src/common") // alias "common"
+      "common": path.resolve(__dirname, "src/common"), // alias "common"
+      'store': path.resolve(__dirname, 'src/store'),
+      'components': path.resolve(__dirname, 'src/components'),
+      'pages': path.resolve(__dirname, 'src/pages'),
     }
   }
 })

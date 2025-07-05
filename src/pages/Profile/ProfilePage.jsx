@@ -1,19 +1,29 @@
+import { EditOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Col, Row, Typography, Upload } from "antd";
+import useApp from "antd/es/app/useApp";
+import { genderOptions } from "common/enums/Gender";
+import { roleOptions } from "common/enums/Role";
+import { normalizeEmpty } from "common/utilities/string";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "store/userSlice";
 import { InputComponent } from "../../components/InputComponent";
-import { Button, Row, Col, Card, Avatar, Typography } from "antd";
-import { useSelector } from "react-redux";
+import { useProfileService } from "../../services/profileService";
 
 const { Title, Text } = Typography;
 
 const Profile = () => {
+  const { message } = useApp();
   const user = useSelector((state) => state.user.currentUser);
+  const { getMyProfile, updateProfile } = useProfileService();
+  const [avatarPreview, setAvatarPreview] = React.useState(
+    user?.avatarUrl || ""
+  );
+  const [avatarFile, setAvatarFile] = React.useState(null);
+  const dispatch = useDispatch();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-  } = useForm({
+  const { control, handleSubmit, reset, watch } = useForm({
     defaultValues: {
       fullName: "",
       email: "",
@@ -21,12 +31,12 @@ const Profile = () => {
       phoneNumber: "",
       address: "",
       position: "",
-      country: "",
-      language: "",
-      timeZone: "",
+      role: "",
+      avatarUrl: "",
     },
   });
-
+  const watchedName = watch("fullName");
+  const watchedEmail = watch("email");
   useEffect(() => {
     if (user) {
       reset({
@@ -36,29 +46,94 @@ const Profile = () => {
         phoneNumber: user.phoneNumber || "",
         address: user.address || "",
         position: user.position || "",
-        country: "",
-        language: "",
-        timeZone: "",
+        role: user.role || "",
+        avatarUrl: user.avatarUrl || "",
       });
     }
   }, [user, reset]);
 
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+    });
+  };
 
-  const onSubmit = (data) => {
-    console.log("Form data:", data);
-    // TODO: Gửi dữ liệu lên backend
+  const onSubmit = async (formData) => {
+    try {
+      let avatarUrl = user?.avatarUrl;
+
+      // Nếu user chọn ảnh mới
+      if (avatarFile) {
+        avatarUrl = await convertToBase64(avatarFile);
+      }
+      if (!avatarFile && !user?.avatarUrl) {
+        message.error("Ảnh đại diện không được để trống");
+        return;
+      }
+
+      const payload = {
+        name: normalizeEmpty(formData.fullName),
+        email: normalizeEmpty(formData.email),
+        gender: normalizeEmpty(formData.gender),
+        phoneNumber: normalizeEmpty(formData.phoneNumber),
+        address: normalizeEmpty(formData.address),
+        position: normalizeEmpty(formData.position),
+        role: normalizeEmpty(formData.role),
+        avatarUrl,
+      };
+
+      await updateProfile(payload);
+
+      const updatedUser = await getMyProfile();
+      dispatch(setUser(updatedUser));
+      message.success("Cập nhật thông tin thành công!");
+    } catch (error) {
+      console.error("Update profile error:", error);
+      message.error("Cập nhật thông tin thất bại!");
+    }
   };
 
   return (
     <div className="flex items-center justify-center px-10 py-5">
       <Card style={{ width: "100%", padding: 5 }}>
         <div className="flex items-center mb-6">
-          <Avatar size={80} src={user?.avatarUrl} />
+          <Upload
+            accept="image/*"
+            showUploadList={false}
+            beforeUpload={(file) => {
+              setAvatarFile(file);
+              setAvatarPreview(URL.createObjectURL(file));
+              return false; // Ngăn Ant Design tự upload
+            }}
+          >
+            <div className="relative">
+              <Avatar
+                size={80}
+                src={avatarPreview || user?.avatarUrl}
+                className="cursor-pointer transition hover:opacity-80"
+              />
+              <EditOutlined
+                style={{
+                  position: "absolute",
+                  bottom: -5,
+                  right: -5,
+                  background: "#fff",
+                  borderRadius: "50%",
+                  padding: 4,
+                  fontSize: 14,
+                  boxShadow: "0 0 2px rgba(0,0,0,0.3)",
+                }}
+              />
+            </div>
+          </Upload>
           <div className="ml-4">
             <Title level={4} style={{ margin: 0 }}>
-              {user?.name}
+              {watchedName}
             </Title>
-            <Text type="secondary">{user?.email}</Text>
+            <Text type="secondary">{watchedEmail}</Text>
           </div>
         </div>
 
@@ -70,6 +145,12 @@ const Profile = () => {
                 name="fullName"
                 label="Full Name"
                 placeholder="Enter full name"
+                rules={{
+                  required: "Họ tên không được để trống",
+                  validate: (value) =>
+                    value.trim() !== "" ||
+                    "Tên không được chỉ chứa khoảng trắng",
+                }}
               />
             </Col>
             <Col span={12}>
@@ -78,6 +159,13 @@ const Profile = () => {
                 name="email"
                 label="Email"
                 placeholder="Enter email"
+                rules={{
+                  required: "Email không được để trống",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Email không hợp lệ",
+                  },
+                }}
               />
             </Col>
 
@@ -86,10 +174,8 @@ const Profile = () => {
                 control={control}
                 name="gender"
                 label="Gender"
-                options={[
-                  { label: "Male", value: "MALE" },
-                  { label: "Female", value: "FEMALE" },
-                ]}
+                options={genderOptions}
+                rules={{ required: "Vui lòng chọn giới tính" }}
               />
             </Col>
             <Col span={12}>
@@ -98,6 +184,13 @@ const Profile = () => {
                 name="phoneNumber"
                 label="Phone Number"
                 placeholder="Enter phone number"
+                rules={{
+                  required: "Số điện thoại không được để trống",
+                  pattern: {
+                    value: /^[0-9+]{9,15}$/,
+                    message: "Số điện thoại không hợp lệ",
+                  },
+                }}
               />
             </Col>
 
@@ -119,19 +212,15 @@ const Profile = () => {
               />
             </Col>
 
-
             <Col span={12}>
               <InputComponent
                 control={control}
                 name="role"
                 label="Role"
-                options={[
-                  { label: "Staff", value: "staff" },
-                  { label: "Admin", value: "admin" },
-                ]}
+                options={ roleOptions }
+                rules={{ required: "Vai trò không được để trống" }}
               />
             </Col>
-
           </Row>
 
           <div className="text-right mt-6">
