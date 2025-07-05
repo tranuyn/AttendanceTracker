@@ -36,8 +36,7 @@ export default function StaffManagementPage() {
     total: 0,
   });
 
-  const { getAllUsers, updateUser, deleteUser, createUser, getUsers } =
-    useUserService();
+  const { updateUser, deleteUser, createUser, getUsers } = useUserService();
 
   useEffect(() => {
     fetchUsers(pagination.current, pagination.pageSize, search);
