@@ -9,7 +9,9 @@ import {
   Image,
   DatePicker,
   message,
+  Avatar,
 } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useComplainService } from "../../services/complainService";
 
@@ -25,21 +27,36 @@ export default function ComplainsPage() {
   const [complains, setComplains] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const { getWithMonth, changeStatus } = useComplainService();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+
+  const fetchReport = async (page = 1, pageSize = 5) => {
+    try {
+      const year = selectedMonth.year();
+      const month = selectedMonth.month() + 1;
+      const response = await getWithMonth({
+        year,
+        month,
+        page: page - 1,
+        size: pageSize,
+      });
+      setComplains(response.content || []);
+      setPagination({
+        current: response.number + 1,
+        pageSize: response.size,
+        total: response.totalElements,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy báo cáo:", error);
+      message.error("Không thể tải dữ liệu chấm công");
+    }
+  };
 
   useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const year = selectedMonth.year();
-        const month = selectedMonth.month() + 1;
-        const response = await getWithMonth({ year, month });
-        setComplains(response);
-      } catch (error) {
-        console.error("Lỗi khi lấy báo cáo:", error);
-        message.error("Không thể tải dữ liệu chấm công");
-      }
-    };
-
-    fetchReport();
+    fetchReport(pagination.current, pagination.pageSize);
   }, [selectedMonth]);
 
   const handleAction = async (id, newStatus) => {
@@ -59,10 +76,6 @@ export default function ComplainsPage() {
     }
   };
 
-  const filteredComplains = complains.filter((c) =>
-    dayjs(c.date).isSame(selectedMonth, "month")
-  );
-
   const columns = [
     {
       title: "Ngày",
@@ -75,7 +88,18 @@ export default function ComplainsPage() {
       title: "Nhân viên",
       key: "userName",
       render: (_, record) => (
-        <Text>{record.attendance?.user?.name || "Không rõ"}</Text>
+        <Space>
+          <Avatar
+            src={record.attendance?.user?.avatarUrl}
+            icon={<UserOutlined />}
+          />
+          <div>
+            <div className="font-medium">{record.attendance?.user?.name}</div>
+            <div className="text-sm text-gray-500">
+              {record.attendance?.user?.email}
+            </div>
+          </div>
+        </Space>
       ),
     },
     {
@@ -139,7 +163,20 @@ export default function ComplainsPage() {
         />
       }
     >
-      <Table columns={columns} dataSource={filteredComplains} rowKey="id" />
+      <Table
+        columns={columns}
+        dataSource={complains}
+        rowKey="id"
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination) => {
+          fetchReport(pagination.current, pagination.pageSize);
+        }}
+      />
     </Card>
   );
 }

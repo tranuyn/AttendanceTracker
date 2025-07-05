@@ -36,7 +36,8 @@ export default function StaffManagementPage() {
     total: 0,
   });
 
-  const { getAllUsers, updateUser, deleteUser, createUser, getUsers } = useUserService();
+  const { getAllUsers, updateUser, deleteUser, createUser, getUsers } =
+    useUserService();
 
   useEffect(() => {
     fetchUsers(pagination.current, pagination.pageSize, search);
@@ -53,7 +54,6 @@ export default function StaffManagementPage() {
       });
       console.log("getUsers response", res);
 
-
       setEmployees(res.content || []);
       setPagination({
         current: res.number + 1,
@@ -69,7 +69,7 @@ export default function StaffManagementPage() {
   };
   const handleSearchChange = (value) => {
     setSearch(value);
-    console.log(value)
+    console.log(value);
     fetchUsers(1, pagination.pageSize, value);
   };
 
@@ -160,9 +160,7 @@ export default function StaffManagementPage() {
           Quản lý nhân viên
         </Title>
         <div className="flex gap-2 max-sm:flex-col ">
-          <SearchBar
-            onSearch={handleSearchChange}
-          />
+          <SearchBar onSearch={handleSearchChange} />
           <Button
             icon={<PlusOutlined />}
             type="primary"
