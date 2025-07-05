@@ -3,6 +3,10 @@ import { useApi } from "../api/rest-util";
 export function useUserService() {
   const { get, patch } = useApi();
 
+  const getMe = async () => {
+    return await get("/me");
+  };
+
   const getAllUsers = async () => {
     return await get("/users/all");
   };
@@ -11,5 +15,5 @@ export function useUserService() {
     return await patch(`/users/${id}`, data);
   };
 
-  return { getAllUsers, updateUser };
+  return { getMe, getAllUsers, updateUser };
 }

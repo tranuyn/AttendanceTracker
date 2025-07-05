@@ -6,7 +6,7 @@ import { StyleProvider } from "@ant-design/cssinjs";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { ConfigProvider } from "antd";
 import { Provider } from "react-redux";
-import store from "./store"; 
+import store from "./store";
 import { App as AntdApp } from "antd";
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
@@ -27,7 +27,7 @@ createRoot(document.getElementById("root")).render(
           domain={domain}
           clientId={clientId}
           authorizationParams={{
-            redirect_uri: window.location.origin + "/callback",
+            redirect_uri: window.location.origin + "/timesheet",
           }}
         >
           <Provider store={store}>

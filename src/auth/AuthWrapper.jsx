@@ -2,16 +2,18 @@ import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "../store/userSlice";
-import { message } from "antd";
+import useApp from "antd/es/app/useApp";
+import { useUserService } from "../services/userService";
 
 export default function AuthWrapper({ children }) {
+  const { message } = useApp();
   const { isAuthenticated, isLoading, getIdTokenClaims, logout } = useAuth0();
   const dispatch = useDispatch();
   const { currentUser, isLoaded } = useSelector((state) => state.user);
-
+  const { getMe } = useUserService();
   useEffect(() => {
     if (isLoading) return;
-    
+
     if (!isAuthenticated) {
       if (currentUser) {
         dispatch(clearUser());
@@ -26,30 +28,36 @@ export default function AuthWrapper({ children }) {
     if (isAuthenticated && !currentUser && !isLoaded) {
       (async () => {
         try {
-          const token = await getIdTokenClaims();
-          if (!token) return;
-          
-          const res = await fetch("http://localhost:8081/users/me", {
-            headers: { Authorization: `Bearer ${token.__raw}` },
-          });
-
+          const res = await getMe();
           if (res.ok) {
             const user = await res.json();
             dispatch(setUser(user));
           } else {
-            message.error("Không thể tải thông tin người dùng");
+            const errorBody = await res.json();
+            message.error(
+              errorBody?.error || "Không thể tải thông tin người dùng"
+            );
             dispatch(clearUser());
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             logout({ returnTo: window.location.origin + "/login" });
           }
         } catch (err) {
-          console.error("Fetch user error:", err);
           message.error("Lỗi khi tải thông tin người dùng");
           dispatch(clearUser());
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           logout({ returnTo: window.location.origin + "/login" });
         }
       })();
     }
-  }, [isAuthenticated, isLoading, currentUser, isLoaded, getIdTokenClaims, logout, dispatch]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    currentUser,
+    isLoaded,
+    getIdTokenClaims,
+    logout,
+    dispatch,
+  ]);
 
   return children;
 }
