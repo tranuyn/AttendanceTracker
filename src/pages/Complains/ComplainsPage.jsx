@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Card,
@@ -9,96 +9,110 @@ import {
   Image,
   DatePicker,
   message,
+  Avatar,
 } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useComplainService } from "../../services/complainService";
 
 const { Text } = Typography;
 
-const mockComplains = [
-  {
-    id: "1",
-    date: "2025-07-01",
-    staffName: "Nguyễn Văn A",
-    status: "pending",
-    text: "Công ty rớt mạng",
-    imageUrl: "https://cdn.tgdd.vn/Files/2020/07/25/1273516/loi-mat-mang-no-internet-access-tren-windows-10--24.jpg",
-  },
-  {
-    id: "2",
-    date: "2025-07-02",
-    staffName: "Trần Thị B",
-    status: "approved",
-    text: "Không check-out được do mất mạng.",
-    imageUrl: null,
-  },
-  {
-    id: "3",
-    date: "2025-07-03",
-    staffName: "Lê Văn C",
-    status: "rejected",
-    text: "Tôi quên check-in nhưng thực sự có đi làm.",
-    imageUrl: null,
-  },
-  {
-    id: "4",
-    date: "2025-06-03",
-    staffName: "Lê Văn C",
-    status: "rejected",
-    text: "Sếp ơi em lỡ",
-    imageUrl: null,
-  },
-];
-
 const statusColors = {
-  pending: "orange",
-  approved: "green",
-  rejected: "red",
+  PENDING: "orange",
+  APPROVED: "green",
+  REJECTED: "red",
 };
 
 export default function ComplainsPage() {
-  const [complains, setComplains] = useState(mockComplains);
+  const [complains, setComplains] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
+  const { getWithMonth, changeStatus } = useComplainService();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
 
-  const handleAction = (id, newStatus) => {
-    const updated = complains.map((c) =>
-      c.id === id ? { ...c, status: newStatus } : c
-    );
-    setComplains(updated);
-    message.success(
-      newStatus === "approved"
-        ? "Đã duyệt yêu cầu"
-        : "Đã từ chối yêu cầu"
-    );
+  const fetchReport = async (page = 1, pageSize = 5) => {
+    try {
+      const year = selectedMonth.year();
+      const month = selectedMonth.month() + 1;
+      const response = await getWithMonth({
+        year,
+        month,
+        page: page - 1,
+        size: pageSize,
+      });
+      setComplains(response.content || []);
+      setPagination({
+        current: response.number + 1,
+        pageSize: response.size,
+        total: response.totalElements,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy báo cáo:", error);
+      message.error("Không thể tải dữ liệu chấm công");
+    }
   };
 
-  const filteredComplains = complains.filter((c) =>
-    dayjs(c.date).isSame(selectedMonth, "month")
-  );
+  useEffect(() => {
+    fetchReport(pagination.current, pagination.pageSize);
+  }, [selectedMonth]);
+
+  const handleAction = async (id, newStatus) => {
+    try {
+      const res = await changeStatus(id, { status: newStatus });
+
+      setComplains((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
+      );
+
+      message.success(
+        newStatus === "APPROVED" ? "Đã duyệt yêu cầu" : "Đã từ chối yêu cầu"
+      );
+    } catch (error) {
+      console.error("Lỗi cập nhật khiếu nại:", error);
+      message.error("Không thể cập nhật trạng thái khiếu nại");
+    }
+  };
 
   const columns = [
     {
       title: "Ngày",
-      dataIndex: "date",
-      key: "date",
-      align: "center", 
-      render: (date) => dayjs(date).format("DD/MM/YYYY"),
+      dataIndex: "createdAt",
+      key: "createdAt",
+      align: "center",
+      render: (createdAt) => dayjs(createdAt).format("DD/MM/YYYY"),
     },
     {
       title: "Nhân viên",
-      dataIndex: "staffName",
-      key: "staffName",
+      key: "userName",
+      render: (_, record) => (
+        <Space>
+          <Avatar
+            src={record.attendance?.user?.avatarUrl}
+            icon={<UserOutlined />}
+          />
+          <div>
+            <div className="font-medium">{record.attendance?.user?.name}</div>
+            <div className="text-sm text-gray-500">
+              {record.attendance?.user?.email}
+            </div>
+          </div>
+        </Space>
+      ),
     },
     {
       title: "Nội dung",
-      dataIndex: "text",
-      key: "text",
-      render: (text) => <Text>{text}</Text>,
+      dataIndex: "content",
+      key: "content",
+      render: (content) => <Text>{content}</Text>,
     },
     {
       title: "Ảnh minh chứng",
-      dataIndex: "imageUrl",
-      key: "imageUrl",
-      align: "center", 
+      dataIndex: "complainImage",
+      key: "complainImage",
+      align: "center",
       render: (url) =>
         url ? (
           <Image width={80} src={url} alt="Ảnh minh chứng" />
@@ -110,25 +124,24 @@ export default function ComplainsPage() {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      align: "center", 
+      align: "center",
       render: (status) => <Tag color={statusColors[status]}>{status}</Tag>,
     },
     {
       title: "Hành động",
       key: "actions",
-      align: "center", 
+      align: "center",
       render: (_, record) =>
-        record.status === "pending" ? (
+        record.status === "PENDING" ? (
           <Space>
-            <Button color="primary" variant="outlined"
-              onClick={() => handleAction(record.id, "approved")}
+            <Button
+              color="primary"
+              variant="outlined"
+              onClick={() => handleAction(record.id, "APPROVED")}
             >
               Duyệt
             </Button>
-            <Button
-              danger
-              onClick={() => handleAction(record.id, "rejected")}
-            >
+            <Button danger onClick={() => handleAction(record.id, "REJECTED")}>
               Từ chối
             </Button>
           </Space>
@@ -152,9 +165,17 @@ export default function ComplainsPage() {
     >
       <Table
         columns={columns}
-        dataSource={filteredComplains}
+        dataSource={complains}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination) => {
+          fetchReport(pagination.current, pagination.pageSize);
+        }}
       />
     </Card>
   );

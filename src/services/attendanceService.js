@@ -12,6 +12,8 @@ export function useAttendanceService() {
     return await post("/attendance/checkout");
   };
 
+  const getReportMonthly = (params) =>
+    get("/attendance/report/monthly", params);
   
   // API cho staff: lấy chấm công tuần này của chính mình
   const getMyWeeklyAttendance = async () => {
@@ -32,5 +34,6 @@ export function useAttendanceService() {
     checkOutWithImage,
     getMyWeeklyAttendance,
     getUserWeeklyAttendance,
+    getReportMonthly
   };
 }
