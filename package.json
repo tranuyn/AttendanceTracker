@@ -18,11 +18,13 @@
     "@mui/material": "^7.2.0",
     "@reduxjs/toolkit": "^2.8.2",
     "antd": "^5.26.3",
+    "file-saver": "^2.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.59.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.6.3"
+    "react-router-dom": "^7.6.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
