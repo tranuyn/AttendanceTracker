@@ -59,6 +59,18 @@ export default function CheckinCheckoutPage() {
     startCamera();
   };
 
+  const dataURLtoBlob = (dataurl) => {
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  };
+
   const handleSubmit = async () => {
     if (!photoDataUrl) {
       message.error("Bạn cần chụp ảnh trước khi gửi");
@@ -69,9 +81,12 @@ export default function CheckinCheckoutPage() {
 
     try {
       const formData = new FormData();
-      const blob = await (await fetch(photoDataUrl)).blob();
+      const blob = dataURLtoBlob(photoDataUrl);
       const fieldName = mode === "checkin" ? "checkInImage" : "checkOutImage";
-      formData.append(fieldName, blob, `${fieldName}.png`);
+
+      formData.append(fieldName, blob, `${fieldName}.jpg`);
+      formData.append("type", mode);
+      formData.append("timestamp", new Date().toISOString());
 
       const response =
         mode === "checkin"
