@@ -110,8 +110,8 @@ export default function ComplainsPage() {
     },
     {
       title: "Ảnh minh chứng",
-      dataIndex: "complainImage",
-      key: "complainImage",
+      dataIndex: "complainImageUrl",
+      key: "complainImageUrl",
       align: "center",
       render: (url) =>
         url ? (
