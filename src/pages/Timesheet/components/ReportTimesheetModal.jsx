@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, Form, Input, Upload, Button, message } from "antd";
+import { Modal, Form, Input, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
 const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
@@ -9,27 +9,52 @@ const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
     if (record) {
       form.setFieldsValue({
         date: record.date,
+        note: record.complain?.content || "",
+        attachment: record.complain?.complainImageUrl
+          ? [
+              {
+                uid: "-1",
+                name: "complain.jpg",
+                status: "done",
+                url: record.complain.complainImageUrl,
+              },
+            ]
+          : [],
       });
     }
-  }, [record]);
+  }, [record, form]);
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      message.success("Báo lỗi đã được gửi!");
-      onSubmit({
-        ...record,
-        ...values,
-      });
+      const fileList = values.attachment;
+      const file = fileList?.[0]?.originFileObj || null;
+
+      const body = {
+        attendanceId: record.id,
+        content: values.note,
+        complainImage: file,
+        complainid: record.complain?.id || null,
+      };
+
+      onSubmit(body, !!record.complain);
       form.resetFields();
     });
+  };
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
   };
 
   return (
     <Modal
       open={open}
-      onCancel={onCancel}
+      onCancel={() => {
+        form.resetFields();
+        onCancel();
+      }}
       onOk={handleOk}
-      okText="Gửi"
+      okText={record?.complain ? "Cập nhật" : "Gửi"}
       cancelText="Hủy"
       title="Báo lỗi chấm công"
     >
@@ -50,7 +75,7 @@ const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
           name="attachment"
           label="Ảnh chứng minh"
           valuePropName="fileList"
-          getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+          getValueFromEvent={normFile}
         >
           <Upload
             name="file"

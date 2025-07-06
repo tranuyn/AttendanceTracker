@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Statistic, Button, Space, message, Form } from "antd";
-import { useAuth0 } from "@auth0/auth0-react";
+import { Row, Col, Card, Statistic, Button, Space, Form } from "antd";
+import useApp from "antd/es/app/useApp";
 import dayjs from "dayjs";
 import TimesheetTable from "./components/TimesheetTable";
 import ReportSection from "./components/ReportSection";
 import TimesheetFormModal from "./components/TimesheetFormModal";
 import ReportTimesheetModal from "./components/ReportTimesheetModal";
 import { useAttendanceService } from "services/attendanceService";
+import { useComplainService } from "services/complainService";
+import { useSelector } from "react-redux";
 
 export default function TimesheetPage() {
+  const { message } = useApp();
   const [currentView, setCurrentView] = useState("timesheet");
   const [selectedWeek, setselectedWeek] = useState(dayjs());
   const [timesheetData, setTimesheetData] = useState([]);
@@ -16,59 +19,62 @@ export default function TimesheetPage() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [userRole] = useState("staff");
+  const { currentUser } = useSelector((state) => state.user);
+  const role = currentUser?.role || "user";
   const [statistics, setStatistics] = useState({
     totalHours: 0,
     averageHoursPerDay: 0,
     presentDays: 0,
-    violationDays: 0
-  })
+    violationDays: 0,
+  });
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportRecord, setReportRecord] = useState(null);
 
   const { getMyWeeklyAttendance } = useAttendanceService();
+  const { createComplain, updateComplain } = useComplainService();
+
+  const fetchAttendance = async () => {
+    if (selectedWeek) {
+      const startOfWeek = selectedWeek.startOf("week").format("YYYY-MM-DD");
+      const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
+      try {
+        const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
+        const data = response?.content || [];
+
+        const transformed = data.map((item, index) => {
+          const checkInTime = dayjs(item.checkIn);
+          const checkOutTime = item.checkOut ? dayjs(item.checkOut) : null;
+          const totalHours = checkOutTime
+            ? checkOutTime.diff(checkInTime, "minute") / 60
+            : 0;
+
+          return {
+            key: item.id || index.toString(),
+            ...item,
+            date: dayjs(item.checkIn).format("YYYY-MM-DD"),
+            checkIn: checkInTime.format("HH:mm"),
+            checkOut: checkOutTime ? checkOutTime.format("HH:mm") : "--:--",
+            totalHours: Math.round(totalHours * 100) / 100,
+            employee: item.user?.name || "Tôi",
+          };
+        });
+        setTimesheetData(transformed);
+        setStatistics({
+          totalHours: response.totalHours || 0,
+          averageHoursPerDay: response.averageHoursPerDay || 0,
+          presentDays: response.presentDays || 0,
+          violationDays: response.violationDays || 0,
+        });
+      } catch (error) {
+        message.error("Không thể tải dữ liệu điểm danh tuần này");
+      }
+    }
+  };
 
   useEffect(() => {
-    const fetchAttendance = async () => {
-      if (userRole === "staff" && selectedWeek) {
-        const startOfWeek = selectedWeek.startOf("week").format("YYYY-MM-DD");
-        const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
-        try {
-          const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
-          const data = response?.records || [];
-
-          const transformed = data.map((item, index) => {
-            const checkInTime = dayjs(item.checkIn);
-            const checkOutTime = item.checkOut ? dayjs(item.checkOut) : null;
-            const totalHours = checkOutTime
-              ? checkOutTime.diff(checkInTime, "minute") / 60
-              : 0;
-
-            return {
-              key: item.id || index.toString(),
-              ...item,
-              date: dayjs(item.checkIn).format("YYYY-MM-DD"),
-              checkIn: checkInTime.format("HH:mm"),
-              checkOut: checkOutTime ? checkOutTime.format("HH:mm") : "--:--",
-              totalHours: Math.round(totalHours * 100) / 100,
-              employee: item.user?.name || "Tôi",
-            };
-          });
-          setTimesheetData(transformed);        
-          setStatistics({
-            totalHours: response.totalHours || 0,
-            averageHoursPerDay: response.averageHoursPerDay || 0,
-            presentDays: response.presentDays || 0,
-            violationDays: response.violationDays || 0,
-          });
-        } catch (error) {
-          message.error("Không thể tải dữ liệu điểm danh tuần này");
-        }
-      }
-    };
-
     fetchAttendance();
-  }, [userRole, selectedWeek]);
+  }, [role, selectedWeek]);
 
   const handleAdd = () => {
     setEditingRecord(null);
@@ -122,15 +128,36 @@ export default function TimesheetPage() {
   };
 
   const openReportModal = (record) => {
-    setReportRecord(record);
-    console.log(record)
-    setReportOpen(true);
+    setReportRecord(null);
+    setTimeout(() => {
+      setReportRecord(record);
+      setReportOpen(true);
+    }, 0);
   };
 
-  const handleSendReport = (reportData) => {
-    console.log("Report gửi:", reportData);
-    // TODO: gửi lên BE
-    setReportOpen(false);
+  const handleSendReport = async (reportData, isUpdate) => {
+    const formData = new FormData();
+    formData.append("attendanceId", reportData.attendanceId);
+    formData.append("content", reportData.content);
+    if (reportData.complainImage) {
+      formData.append("complainImage", reportData.complainImage);
+    }
+
+    try {
+      if (isUpdate) {
+        await updateComplain(reportData.complainid, formData);
+        message.success("Đã cập nhật báo lỗi!");
+        await fetchAttendance();
+      } else {
+        await createComplain(formData);
+        message.success("Báo lỗi đã được gửi!");
+        await fetchAttendance();
+      }
+      setReportOpen(false);
+    } catch (error) {
+      console.error("Gửi báo lỗi thất bại:", error);
+      message.error("Gửi báo lỗi thất bại!");
+    }
   };
 
   const renderContent = () => {
@@ -213,12 +240,14 @@ export default function TimesheetPage() {
           >
             Chấm công
           </Button>
-          <Button
-            type={currentView === "reports" ? "primary" : "default"}
-            onClick={() => setCurrentView("reports")}
-          >
-            Báo cáo
-          </Button>
+          {role === "admin" && (
+            <Button
+              type={currentView === "reports" ? "primary" : "default"}
+              onClick={() => setCurrentView("reports")}
+            >
+              Báo cáo
+            </Button>
+          )}
         </Space>
       </div>
 
