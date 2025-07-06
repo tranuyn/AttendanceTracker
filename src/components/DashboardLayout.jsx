@@ -157,7 +157,6 @@ const DashboardLayout = ({ children, role }) => {
               label: "Logout",
               onClick: async () => {
                 dispatch(clearUser());
-                await new Promise((resolve) => setTimeout(resolve, 1000));
                 logout({ returnTo: window.location.origin + "/login" });
               },
             },

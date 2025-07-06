@@ -35,7 +35,7 @@ export default function TimesheetPage() {
   const { createComplain, updateComplain } = useComplainService();
 
   const fetchAttendance = async () => {
-    if (role === "staff" && selectedWeek) {
+    if (selectedWeek) {
       const startOfWeek = selectedWeek.startOf("week").format("YYYY-MM-DD");
       const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
       try {
