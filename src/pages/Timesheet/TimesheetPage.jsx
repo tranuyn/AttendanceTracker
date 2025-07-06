@@ -29,7 +29,7 @@ export default function TimesheetPage() {
         const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
         try {
           const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
-          const data = response || [];
+          const data = response?.content || [];
 
           const transformed = data.map((item, index) => {
             const checkInTime = dayjs(item.checkIn);
@@ -45,11 +45,9 @@ export default function TimesheetPage() {
               checkIn: checkInTime.format("HH:mm"),
               checkOut: checkOutTime ? checkOutTime.format("HH:mm") : "--:--",
               totalHours: Math.round(totalHours * 100) / 100,
-              status: totalHours >= 8 ? "completed" : "late",
               employee: item.user?.name || "Tôi",
             };
           });
-          console.log(transformed)
           setTimesheetData(transformed);
         } catch (error) {
           message.error("Không thể tải dữ liệu điểm danh tuần này");
@@ -137,6 +135,7 @@ export default function TimesheetPage() {
 
   const openReportModal = (record) => {
     setReportRecord(record);
+    console.log(record)
     setReportOpen(true);
   };
 

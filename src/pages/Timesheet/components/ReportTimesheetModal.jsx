@@ -51,7 +51,6 @@ const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
           label="Ảnh chứng minh"
           valuePropName="fileList"
           getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-          rules={[{ required: true, message: "Vui lòng tải ảnh lên!" }]}
         >
           <Upload
             name="file"

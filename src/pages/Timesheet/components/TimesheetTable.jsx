@@ -11,8 +11,9 @@ const TimesheetTable = ({
   onReport, // mới
   selectedWeek,
   setselectedWeek,
-  role = "admin", // truyền từ ngoài
+  role = "staff", // truyền từ ngoài
 }) => {
+
   const columns = [
     {
       title: "Ngày",
@@ -57,16 +58,31 @@ const TimesheetTable = ({
     {
       title: "Trạng thái",
       dataIndex: "status",
-      align: "center", 
+      align: "center",
       key: "status",
       render: (status) => {
-        const colorMap = { completed: "green", late: "orange", absent: "red" };
-        const labelMap = { completed: "Hoàn thành", late: "Trễ", absent: "Vắng" };
+        const statusKey = status?.toUpperCase();
+
+        const colorMap = {
+          ABSENT: "red",
+          NO_CHECKOUT: "orange",
+          LATE: "gold",
+          EARLY_LEAVE: "gold",
+          COMPLETED: "green",
+        };
+
+        const labelMap = {
+          ABSENT: "Vắng mặt",
+          NO_CHECKOUT: "Chưa check-out",
+          LATE: "Đi trễ",
+          EARLY_LEAVE: "Về sớm",
+          COMPLETED: "Hoàn thành",
+        };
 
         return (
-          <Space>
-            <Tag color={colorMap[status]}>{labelMap[status]}</Tag>
-          </Space>
+          <Tag color={colorMap[statusKey] || "default"}>
+            {labelMap[statusKey] || "Không xác định"}
+          </Tag>
         );
       },
     },
@@ -75,7 +91,7 @@ const TimesheetTable = ({
       key: "actions",
       align: "center", 
       render: (_, record) =>{
-        const isReportable = record.status !== "completed";
+        const isReportable = record.status?.toUpperCase() !== "COMPLETED";
         return(
           <Space>
             {role === "admin" && (
