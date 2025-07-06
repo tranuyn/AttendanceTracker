@@ -1,4 +1,4 @@
-import { Layout, Menu } from "antd";
+import { Button, Layout, Menu, Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -7,13 +7,20 @@ import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import CameraFrontRoundedIcon from '@mui/icons-material/CameraFrontRounded';
+import LogoutIcon from '@mui/icons-material/Logout';
 import logo from "../assets/images/logo.png";
+import { clearUser } from "store/userSlice";
+import { useDispatch } from "react-redux";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { Sider, Content } = Layout;
 
 const DashboardLayout = ({ children, role }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth0();
+
   const [collapsed, setCollapsed] = useState(false);
+  const dispatch = useDispatch();
 
   const menuItems = {
     user: [
@@ -100,6 +107,7 @@ const DashboardLayout = ({ children, role }) => {
           paddingTop: 15,
         }}
       >
+
         <div
           style={{
             height: 64,
@@ -125,7 +133,24 @@ const DashboardLayout = ({ children, role }) => {
             </span>
           )}
         </div>
-        <Menu mode="inline" theme="light" items={currentMenu} className="font-normal text-md"/>
+        <Menu mode="inline" theme="light" items={currentMenu} className="font-normal text-md"/> 
+        <Menu
+          mode="inline"
+          theme="light"
+          className="flex flex-1"
+          items={[
+            {
+              key: "logout",
+              icon: <LogoutIcon />,
+              label: "Logout",
+              onClick: async () => {
+                dispatch(clearUser());
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                logout({ returnTo: window.location.origin + "/login" });
+              },
+            },
+          ]}
+        />
       </Sider>
       <Layout style={{ width: "100%" }} hasSider>
         <Content

@@ -9,18 +9,19 @@ const TimesheetTable = ({
   onEdit,
   onDelete,
   onReport, // mới
-  selectedMonth,
-  setSelectedMonth,
-  role = "staff", // truyền từ ngoài
+  selectedWeek,
+  setselectedWeek,
+  role = "admin", // truyền từ ngoài
 }) => {
   const columns = [
     {
       title: "Ngày",
       dataIndex: "date",
+      align: "center", 
       key: "date",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
-    { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn" },
+    { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn", align: "center", },
     {
       title: "Ảnh check-in",
       dataIndex: "checkInImageUrl",
@@ -33,7 +34,7 @@ const TimesheetTable = ({
           <Typography type="secondary">Không có</Typography>
         ),
     },
-    { title: "Giờ ra", dataIndex: "checkOut", key: "checkOut" },
+    { title: "Giờ ra", dataIndex: "checkOut", key: "checkOut", align: "center",  },
     {
       title: "Ảnh check-out",
       dataIndex: "checkOutImageUrl",
@@ -49,12 +50,14 @@ const TimesheetTable = ({
     {
       title: "Tổng giờ",
       dataIndex: "totalHours",
+      align: "center", 
       key: "totalHours",
       render: (hours) => `${hours}h`,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
+      align: "center", 
       key: "status",
       render: (status) => {
         const colorMap = { completed: "green", late: "orange", absent: "red" };
@@ -70,17 +73,20 @@ const TimesheetTable = ({
     {
       title: "Hành động",
       key: "actions",
+      align: "center", 
       render: (_, record) =>{
         const isReportable = record.status !== "completed";
         return(
           <Space>
-            <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
             {role === "admin" && (
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => onDelete(record.key)}
-              />
+              <>
+                <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => onDelete(record.key)}
+                  />
+              </>
             )}
             {role === "staff" && isReportable && (
               <Button color="danger" variant="filled" onClick={() => onReport(record)}>
@@ -99,9 +105,9 @@ const TimesheetTable = ({
       extra={
         <Space>
           <DatePicker
-            picker="month"
-            value={selectedMonth}
-            onChange={setSelectedMonth}
+            picker="week"
+            value={selectedWeek}
+            onChange={setselectedWeek}
             allowClear={false}
           />
           <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
@@ -110,7 +116,7 @@ const TimesheetTable = ({
         </Space>
       }
     >
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={data} pagination={{ pageSize: 10 }} className="overflow-auto" />
     </Card>
   );
 };

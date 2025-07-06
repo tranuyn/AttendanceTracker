@@ -16,10 +16,8 @@ export function useAttendanceService() {
     get("/attendance/report/monthly", params);
   
   // API cho staff: lấy chấm công tuần này của chính mình
-  const getMyWeeklyAttendance = async () => {
-    const startOfWeek = dayjs().startOf('week').format('YYYY-MM-DD');
-    const endOfWeek = dayjs().endOf('week').format('YYYY-MM-DD');
-    return await get(`/attendance/me?from=${'2025-07-01'}&to=${endOfWeek}`);
+  const getMyWeeklyAttendance = async (from, to) => {
+    return await get(`/attendance/me?from=${from}&to=${to}`);
   };
 
   // API cho admin: lấy chấm công tuần này của một user cụ thể (bằng userId)

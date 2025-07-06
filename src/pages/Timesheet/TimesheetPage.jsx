@@ -10,7 +10,7 @@ import { useAttendanceService } from "services/attendanceService";
 
 export default function TimesheetPage() {
   const [currentView, setCurrentView] = useState("timesheet");
-  const [selectedMonth, setSelectedMonth] = useState(dayjs());
+  const [selectedWeek, setselectedWeek] = useState(dayjs());
   const [timesheetData, setTimesheetData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
@@ -24,9 +24,11 @@ export default function TimesheetPage() {
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      if (userRole === "staff") {
+      if (userRole === "staff" && selectedWeek) {
+        const startOfWeek = selectedWeek.startOf("week").format("YYYY-MM-DD");
+        const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
         try {
-          const response = await getMyWeeklyAttendance();
+          const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
           const data = response || [];
 
           const transformed = data.map((item, index) => {
@@ -56,7 +58,7 @@ export default function TimesheetPage() {
     };
 
     fetchAttendance();
-  }, [userRole]);
+  }, [userRole, selectedWeek]);
 
   const mockStaffData = [
     {
@@ -198,8 +200,8 @@ export default function TimesheetPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onReport={openReportModal}
-              selectedMonth={selectedMonth}
-              setSelectedMonth={setSelectedMonth}
+              selectedWeek={selectedWeek}
+              setselectedWeek={setselectedWeek}
             />
             <ReportTimesheetModal
               open={reportOpen}
