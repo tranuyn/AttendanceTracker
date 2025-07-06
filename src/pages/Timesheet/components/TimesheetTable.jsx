@@ -20,7 +20,7 @@ const TimesheetTable = ({
   onReport,
   selectedWeek,
   setselectedWeek,
-  role = "staff",
+  role = "admin", // truyền từ ngoài
 }) => {
   const getStatusColor = (status) => {
     switch (status.toUpperCase()) {
