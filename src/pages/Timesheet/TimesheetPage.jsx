@@ -16,6 +16,12 @@ export default function TimesheetPage() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [userRole] = useState("staff");
+  const [statistics, setStatistics] = useState({
+    totalHours: 0,
+    averageHoursPerDay: 0,
+    presentDays: 0,
+    violationDays: 0
+  })
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportRecord, setReportRecord] = useState(null);
@@ -29,7 +35,7 @@ export default function TimesheetPage() {
         const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
         try {
           const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
-          const data = response?.content || [];
+          const data = response?.records || [];
 
           const transformed = data.map((item, index) => {
             const checkInTime = dayjs(item.checkIn);
@@ -48,7 +54,13 @@ export default function TimesheetPage() {
               employee: item.user?.name || "Tôi",
             };
           });
-          setTimesheetData(transformed);
+          setTimesheetData(transformed);        
+          setStatistics({
+            totalHours: response.totalHours || 0,
+            averageHoursPerDay: response.averageHoursPerDay || 0,
+            presentDays: response.presentDays || 0,
+            violationDays: response.violationDays || 0,
+          });
         } catch (error) {
           message.error("Không thể tải dữ liệu điểm danh tuần này");
         }
@@ -57,30 +69,6 @@ export default function TimesheetPage() {
 
     fetchAttendance();
   }, [userRole, selectedWeek]);
-
-  const mockStaffData = [
-    {
-      key: "1",
-      name: "Nguyễn Văn A",
-      email: "a@company.com",
-      department: "IT",
-      totalHours: 160,
-    },
-    {
-      key: "2",
-      name: "Trần Thị B",
-      email: "b@company.com",
-      department: "HR",
-      totalHours: 155,
-    },
-    {
-      key: "3",
-      name: "Lê Văn C",
-      email: "c@company.com",
-      department: "Finance",
-      totalHours: 162,
-    },
-  ];
 
   const handleAdd = () => {
     setEditingRecord(null);
@@ -145,10 +133,6 @@ export default function TimesheetPage() {
     setReportOpen(false);
   };
 
-  const totalHours = timesheetData.reduce((sum, r) => sum + r.totalHours, 0);
-  const avgHours =
-    timesheetData.length > 0 ? totalHours / timesheetData.length : 0;
-
   const renderContent = () => {
     switch (currentView) {
       case "timesheet":
@@ -159,7 +143,7 @@ export default function TimesheetPage() {
                 <Card>
                   <Statistic
                     title="Tổng giờ làm"
-                    value={totalHours}
+                    value={statistics.totalHours}
                     suffix="h"
                   />
                 </Card>
@@ -168,7 +152,7 @@ export default function TimesheetPage() {
                 <Card>
                   <Statistic
                     title="Trung bình/ngày"
-                    value={avgHours.toFixed(1)}
+                    value={(statistics.averageHoursPerDay ?? 0).toFixed(1)}
                     suffix="h"
                   />
                 </Card>
@@ -185,9 +169,8 @@ export default function TimesheetPage() {
               <Col xs={24} sm={12} md={6}>
                 <Card>
                   <Statistic
-                    title="Hiệu suất"
-                    value={((avgHours / 8) * 100).toFixed(0)}
-                    suffix="%"
+                    title="Số ngày vi phạm chấm công"
+                    value={statistics.violationDays}
                   />
                 </Card>
               </Col>

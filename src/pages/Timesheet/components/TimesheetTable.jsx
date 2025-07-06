@@ -11,7 +11,7 @@ const TimesheetTable = ({
   onReport, // mới
   selectedWeek,
   setselectedWeek,
-  role = "staff", // truyền từ ngoài
+  role = "admin", // truyền từ ngoài
 }) => {
 
   const columns = [
