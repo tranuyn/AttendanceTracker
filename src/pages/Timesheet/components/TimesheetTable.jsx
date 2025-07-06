@@ -10,7 +10,7 @@ import {
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import React from "react";
+import { useSelector } from "react-redux";
 
 const TimesheetTable = ({
   data,
@@ -20,8 +20,9 @@ const TimesheetTable = ({
   onReport,
   selectedWeek,
   setselectedWeek,
-  role = "admin", // truyền từ ngoài
 }) => {
+  const { currentUser } = useSelector((state) => state.user);
+  const role = currentUser?.role || "user";
   const getStatusColor = (status) => {
     switch (status.toUpperCase()) {
       case "PENDING":
@@ -134,7 +135,7 @@ const TimesheetTable = ({
               </>
             )}
             {role === "staff" && isReportable && (
-              <>
+              <Space direction="vertical" size={4} align="center">
                 <Button
                   type={record.complain ? "default" : "dashed"}
                   danger={!!record.complain}
@@ -149,7 +150,7 @@ const TimesheetTable = ({
                     </Tag>
                   </div>
                 )}
-              </>
+              </Space>
             )}
           </Space>
         );

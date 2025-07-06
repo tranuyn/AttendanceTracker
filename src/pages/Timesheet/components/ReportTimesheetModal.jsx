@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, Form, Input, Upload, Button, message } from "antd";
+import { Modal, Form, Input, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
 const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
@@ -33,12 +33,10 @@ const ReportTimesheetModal = ({ open, onCancel, onSubmit, record }) => {
         attendanceId: record.id,
         content: values.note,
         complainImage: file,
+        complainid: record.complain?.id || null,
       };
 
       onSubmit(body, !!record.complain);
-      message.success(
-        record.complain ? "Đã cập nhật báo lỗi!" : "Báo lỗi đã được gửi!"
-      );
       form.resetFields();
     });
   };

@@ -2,12 +2,12 @@ import { Button, Layout, Menu, Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import FeedbackIcon from '@mui/icons-material/Feedback';
-import CameraFrontRoundedIcon from '@mui/icons-material/CameraFrontRounded';
-import LogoutIcon from '@mui/icons-material/Logout';
+import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import FeedbackIcon from "@mui/icons-material/Feedback";
+import CameraFrontRoundedIcon from "@mui/icons-material/CameraFrontRounded";
+import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../assets/images/logo.png";
 import { clearUser } from "store/userSlice";
 import { useDispatch } from "react-redux";
@@ -27,7 +27,7 @@ const DashboardLayout = ({ children, role }) => {
       {
         key: "attendance",
         icon: <CameraFrontRoundedIcon />,
-        label: 'Check-in/Check-out',
+        label: "Check-in/Check-out",
         onClick: () => navigate("/attendance"),
       },
       {
@@ -45,6 +45,12 @@ const DashboardLayout = ({ children, role }) => {
     ],
     staff: [
       {
+        key: "attendance",
+        icon: <CameraFrontRoundedIcon />,
+        label: "Attendance",
+        onClick: () => navigate("/attendance"),
+      },
+      {
         key: "timesheet",
         icon: <CalendarMonthRoundedIcon />,
         label: "Timesheet",
@@ -61,7 +67,7 @@ const DashboardLayout = ({ children, role }) => {
       {
         key: "attendance",
         icon: <CameraFrontRoundedIcon />,
-        label: 'Attendance',
+        label: "Attendance",
         onClick: () => navigate("/attendance"),
       },
       {
@@ -94,7 +100,7 @@ const DashboardLayout = ({ children, role }) => {
   const currentMenu = menuItems[role] || menuItems.user;
 
   return (
-    <Layout style={{ minHeight: "100vh", width: "100vw" }} >
+    <Layout style={{ minHeight: "100vh", width: "100vw" }}>
       <Sider
         collapsible
         collapsed={collapsed}
@@ -103,11 +109,10 @@ const DashboardLayout = ({ children, role }) => {
         style={{
           overflow: "auto",
           height: "100vh",
-          backgroundColor: 'white',
+          backgroundColor: "white",
           paddingTop: 15,
         }}
       >
-
         <div
           style={{
             height: 64,
@@ -128,12 +133,19 @@ const DashboardLayout = ({ children, role }) => {
             }}
           />
           {!collapsed && (
-            <span style={{ color: "#28608e", fontWeight: "bold", fontSize: 16 }}>
+            <span
+              style={{ color: "#28608e", fontWeight: "bold", fontSize: 16 }}
+            >
               Attendance Tracker
             </span>
           )}
         </div>
-        <Menu mode="inline" theme="light" items={currentMenu} className="font-normal text-md"/> 
+        <Menu
+          mode="inline"
+          theme="light"
+          items={currentMenu}
+          className="font-normal text-md"
+        />
         <Menu
           mode="inline"
           theme="light"

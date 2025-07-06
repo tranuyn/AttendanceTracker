@@ -8,6 +8,7 @@ import TimesheetFormModal from "./components/TimesheetFormModal";
 import ReportTimesheetModal from "./components/ReportTimesheetModal";
 import { useAttendanceService } from "services/attendanceService";
 import { useComplainService } from "services/complainService";
+import { useSelector } from "react-redux";
 
 export default function TimesheetPage() {
   const { message } = useApp();
@@ -18,6 +19,8 @@ export default function TimesheetPage() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [userRole] = useState("staff");
+  const { currentUser } = useSelector((state) => state.user);
+  const role = currentUser?.role || "user";
   const [statistics, setStatistics] = useState({
     totalHours: 0,
     averageHoursPerDay: 0,
@@ -29,15 +32,15 @@ export default function TimesheetPage() {
   const [reportRecord, setReportRecord] = useState(null);
 
   const { getMyWeeklyAttendance } = useAttendanceService();
-  const { createComplain } = useComplainService();
+  const { createComplain, updateComplain } = useComplainService();
 
   const fetchAttendance = async () => {
-    if (userRole === "staff" && selectedWeek) {
+    if (role === "staff" && selectedWeek) {
       const startOfWeek = selectedWeek.startOf("week").format("YYYY-MM-DD");
       const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
       try {
         const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
-        const data = response?.records || [];
+        const data = response?.content || [];
 
         const transformed = data.map((item, index) => {
           const checkInTime = dayjs(item.checkIn);
@@ -71,7 +74,7 @@ export default function TimesheetPage() {
 
   useEffect(() => {
     fetchAttendance();
-  }, [userRole, selectedWeek]);
+  }, [role, selectedWeek]);
 
   const handleAdd = () => {
     setEditingRecord(null);
@@ -125,9 +128,11 @@ export default function TimesheetPage() {
   };
 
   const openReportModal = (record) => {
-    setReportRecord(record);
-    console.log(record);
-    setReportOpen(true);
+    setReportRecord(null);
+    setTimeout(() => {
+      setReportRecord(record);
+      setReportOpen(true);
+    }, 0);
   };
 
   const handleSendReport = async (reportData, isUpdate) => {
@@ -140,8 +145,9 @@ export default function TimesheetPage() {
 
     try {
       if (isUpdate) {
-        await api.put("/complains/update", formData);
+        await updateComplain(reportData.complainid, formData);
         message.success("Đã cập nhật báo lỗi!");
+        await fetchAttendance();
       } else {
         await createComplain(formData);
         message.success("Báo lỗi đã được gửi!");
@@ -234,12 +240,14 @@ export default function TimesheetPage() {
           >
             Chấm công
           </Button>
-          <Button
-            type={currentView === "reports" ? "primary" : "default"}
-            onClick={() => setCurrentView("reports")}
-          >
-            Báo cáo
-          </Button>
+          {role === "admin" && (
+            <Button
+              type={currentView === "reports" ? "primary" : "default"}
+              onClick={() => setCurrentView("reports")}
+            >
+              Báo cáo
+            </Button>
+          )}
         </Space>
       </div>
 
