@@ -1,4 +1,13 @@
-import { Table, Card, Button, Space, DatePicker, Typography, Tag, Image } from "antd";
+import {
+  Table,
+  Card,
+  Button,
+  Space,
+  DatePicker,
+  Typography,
+  Tag,
+  Image,
+} from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import React from "react";
@@ -8,26 +17,38 @@ const TimesheetTable = ({
   onAdd,
   onEdit,
   onDelete,
-  onReport, // mới
+  onReport,
   selectedWeek,
   setselectedWeek,
-  role = "staff", // truyền từ ngoài
+  role = "staff",
 }) => {
+  const getStatusColor = (status) => {
+    switch (status.toUpperCase()) {
+      case "PENDING":
+        return "orange";
+      case "APPROVED":
+        return "green";
+      case "REJECTED":
+        return "red";
+      default:
+        return "default";
+    }
+  };
 
   const columns = [
     {
       title: "Ngày",
       dataIndex: "date",
-      align: "center", 
+      align: "center",
       key: "date",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
-    { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn", align: "center", },
+    { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn", align: "center" },
     {
       title: "Ảnh check-in",
       dataIndex: "checkInImageUrl",
       key: "checkInImageUrl",
-      align: "center", 
+      align: "center",
       render: (url) =>
         url ? (
           <Image width={80} src={url} alt="Ảnh check-in" />
@@ -35,12 +56,17 @@ const TimesheetTable = ({
           <Typography type="secondary">Không có</Typography>
         ),
     },
-    { title: "Giờ ra", dataIndex: "checkOut", key: "checkOut", align: "center",  },
+    {
+      title: "Giờ ra",
+      dataIndex: "checkOut",
+      key: "checkOut",
+      align: "center",
+    },
     {
       title: "Ảnh check-out",
       dataIndex: "checkOutImageUrl",
       key: "checkOutImageUrl",
-      align: "center", 
+      align: "center",
       render: (url) =>
         url ? (
           <Image width={80} src={url} alt="Ảnh check-out" />
@@ -51,7 +77,7 @@ const TimesheetTable = ({
     {
       title: "Tổng giờ",
       dataIndex: "totalHours",
-      align: "center", 
+      align: "center",
       key: "totalHours",
       render: (hours) => `${hours}h`,
     },
@@ -89,29 +115,45 @@ const TimesheetTable = ({
     {
       title: "Hành động",
       key: "actions",
-      align: "center", 
-      render: (_, record) =>{
+      align: "center",
+      render: (_, record) => {
         const isReportable = record.status?.toUpperCase() !== "COMPLETED";
-        return(
+        return (
           <Space>
             {role === "admin" && (
               <>
-                <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={() => onEdit(record)}
+                />
                 <Button
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => onDelete(record.key)}
-                  />
+                />
               </>
             )}
             {role === "staff" && isReportable && (
-              <Button color="danger" variant="filled" onClick={() => onReport(record)}>
-                Báo lỗi
-              </Button>
+              <>
+                <Button
+                  type={record.complain ? "default" : "dashed"}
+                  danger={!!record.complain}
+                  onClick={() => onReport(record)}
+                >
+                  {record.complain ? "Đã báo lỗi" : "Báo lỗi"}
+                </Button>
+                {record.complain?.status && (
+                  <div style={{ marginTop: 4 }}>
+                    <Tag color={getStatusColor(record.complain.status)}>
+                      {record.complain.status}
+                    </Tag>
+                  </div>
+                )}
+              </>
             )}
           </Space>
-        )
-      } 
+        );
+      },
     },
   ];
 
@@ -132,7 +174,12 @@ const TimesheetTable = ({
         </Space>
       }
     >
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 10 }} className="overflow-auto" />
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{ pageSize: 10 }}
+        className="overflow-auto"
+      />
     </Card>
   );
 };
