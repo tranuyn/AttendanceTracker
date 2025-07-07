@@ -14,6 +14,8 @@ export default function AuthWrapper({ children }) {
   useEffect(() => {
     if (isLoading) return;
 
+    if (window.location.pathname === "/login") return;
+
     if (!isAuthenticated) {
       if (currentUser) {
         dispatch(clearUser());
@@ -35,13 +37,13 @@ export default function AuthWrapper({ children }) {
             message.error(res?.error || "Không thể tải thông tin người dùng");
             dispatch(clearUser());
             await new Promise((resolve) => setTimeout(resolve, 1000));
-            logout({ returnTo: window.location.origin + "/login" });
+            //logout({ returnTo: window.location.origin + "/login" });
           }
         } catch (err) {
           message.error("Lỗi khi tải thông tin người dùng");
           dispatch(clearUser());
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          logout({ returnTo: window.location.origin + "/login" });
+          //logout({ returnTo: window.location.origin + "/login" });
         }
       })();
     }
