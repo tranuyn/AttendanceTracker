@@ -13,6 +13,7 @@ import {
   Tag,
   Typography,
   Image,
+  Avatar,
 } from "antd";
 import { useUserService } from "services/userService";
 import { useAttendanceService } from "services/attendanceService";
@@ -20,6 +21,7 @@ import { PrinterOutlined, FileExcelOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { exportToExcel } from "common/utilities/exportToExcel";
 import { printReport } from "common/utilities/printReport";
+import { UserOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -51,6 +53,7 @@ const ReportSection = () => {
     const fetchUsers = async () => {
       try {
         const response = await getAllUsers();
+        console.log(response);
         setUsers(response || []);
       } catch {
         message.error("Không thể tải danh sách nhân viên");
@@ -61,7 +64,7 @@ const ReportSection = () => {
 
   // Reset pagination khi thay đổi filters
   useEffect(() => {
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       current: 1,
     }));
@@ -120,8 +123,8 @@ const ReportSection = () => {
       if (selectedUser === "all") {
         // Gọi API /attendance/all với pagination
         const apiPage = Math.max(0, page - 1); // Convert to 0-based
-        
-        console.log('API Call params:', {
+
+        console.log("API Call params:", {
           year,
           month: mode === "month" ? month : undefined,
           page: apiPage,
@@ -136,14 +139,13 @@ const ReportSection = () => {
         });
 
         records = response.content || [];
-        
+
         // Cập nhật pagination với dữ liệu từ API
         setPagination({
           current: page,
           pageSize: pageSize,
           total: response.totalElements || 0,
         });
-
       } else {
         // Gọi API theo từng user (không có pagination)
         if (mode === "month") {
@@ -157,7 +159,7 @@ const ReportSection = () => {
         }
 
         records = Array.isArray(response) ? response : [];
-        
+
         // Reset pagination cho single user
         setPagination({
           current: 1,
@@ -166,15 +168,14 @@ const ReportSection = () => {
         });
       }
 
-      console.log('Records received:', records);
+      console.log("Records received:", records);
       setData(records);
 
       // Tính toán thống kê
       const stats = calculateStatistics(records);
       setStatistics(stats);
-
     } catch (err) {
-      console.error('Error generating report:', err);
+      console.error("Error generating report:", err);
       message.error("Không thể tạo báo cáo. Vui lòng thử lại.");
       setData([]);
       setStatistics({
@@ -190,7 +191,7 @@ const ReportSection = () => {
   };
 
   const handleTableChange = (paginationInfo) => {
-    console.log('Table pagination changed:', paginationInfo);
+    console.log("Table pagination changed:", paginationInfo);
     if (selectedUser === "all") {
       handleGenerateReport(paginationInfo.current, paginationInfo.pageSize);
     }
@@ -198,21 +199,29 @@ const ReportSection = () => {
 
   const columns = [
     {
-      title: "Tên nhân viên",
-      dataIndex: ["user", "name"],
-      key: "name",
+      title: "Nhân viên",
+      key: "user",
+      render: (_, record) => (
+        <Space>
+          <Avatar src={record.user?.avatarUrl} icon={<UserOutlined />} />
+          <div>
+            <div className="font-medium">{record.user?.name}</div>
+            <div className="text-sm text-gray-500">{record.user?.email}</div>
+          </div>
+        </Space>
+      ),
     },
     {
       title: "Ngày",
       dataIndex: "checkIn",
       key: "date",
-      render: (value) => value ? dayjs(value).format("DD/MM/YYYY") : "--",
+      render: (value) => (value ? dayjs(value).format("DD/MM/YYYY") : "--"),
     },
     {
       title: "Giờ vào",
       dataIndex: "checkIn",
       key: "checkIn",
-      render: (value) => value ? dayjs(value).format("HH:mm") : "--:--",
+      render: (value) => (value ? dayjs(value).format("HH:mm") : "--:--"),
     },
     {
       title: "Ảnh check-in",
@@ -286,11 +295,7 @@ const ReportSection = () => {
       <Card title="Bộ lọc báo cáo">
         <div className="flex flex-wrap gap-4">
           <div className="w-full md:w-[calc(25%-12px)]">
-            <Select
-              value={mode}
-              onChange={setMode}
-              style={{ width: "100%" }}
-            >
+            <Select value={mode} onChange={setMode} style={{ width: "100%" }}>
               <Option value="month">Báo cáo theo tháng</Option>
               <Option value="year">Báo cáo theo năm</Option>
             </Select>
@@ -325,8 +330,8 @@ const ReportSection = () => {
           </div>
 
           <div className="max-md:w-full flex max-md:flex-col gap-2">
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               loading={loading}
               onClick={() => handleGenerateReport()}
               block
@@ -334,13 +339,18 @@ const ReportSection = () => {
               Xem báo cáo
             </Button>
             <div className="flex gap-2">
-              <Button icon={<PrinterOutlined />} onClick={() => printReport(data)}  />
-              <Button icon={<FileExcelOutlined />} onClick={() => exportToExcel(data)} />
+              <Button
+                icon={<PrinterOutlined />}
+                onClick={() => printReport(data)}
+              />
+              <Button
+                icon={<FileExcelOutlined />}
+                onClick={() => exportToExcel(data)}
+              />
             </div>
           </div>
         </div>
       </Card>
-
 
       <Card title="Thống kê tổng quan" className="mt-4">
         <Row gutter={[16, 16]}>

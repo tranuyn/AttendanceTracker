@@ -31,7 +31,7 @@ export default function TimesheetPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportRecord, setReportRecord] = useState(null);
 
-  const { getMyWeeklyAttendance } = useAttendanceService();
+  const { getMyWeeklyAttendance, updateAttendace } = useAttendanceService();
   const { createComplain, updateComplain } = useComplainService();
 
   const fetchAttendance = async () => {
@@ -40,7 +40,7 @@ export default function TimesheetPage() {
       const endOfWeek = selectedWeek.endOf("week").format("YYYY-MM-DD");
       try {
         const response = await getMyWeeklyAttendance(startOfWeek, endOfWeek);
-        const data = response?.content || [];
+        const data = response?.records || [];
 
         const transformed = data.map((item, index) => {
           const checkInTime = dayjs(item.checkIn);
@@ -83,13 +83,16 @@ export default function TimesheetPage() {
   };
 
   const handleEdit = (record) => {
-    form.setFieldsValue({
-      date: dayjs(record.date),
-      checkIn: dayjs(record.checkIn, "HH:mm"),
-      checkOut: dayjs(record.checkOut, "HH:mm"),
-    });
-    setEditingRecord(record);
+    setEditingRecord({ ...record, key: record.id });
     setIsModalVisible(true);
+
+    setTimeout(() => {
+      form.setFieldsValue({
+        date: dayjs(record.date),
+        checkIn: dayjs(record.checkIn, "HH:mm"),
+        checkOut: dayjs(record.checkOut, "HH:mm"),
+      });
+    }, 0);
   };
 
   const handleDelete = (key) => {
@@ -97,31 +100,34 @@ export default function TimesheetPage() {
     message.success("Xóa thành công!");
   };
 
-  const handleSubmit = (values) => {
-    const checkIn = values.checkIn.format("HH:mm");
-    const checkOut = values.checkOut.format("HH:mm");
-    const totalHours = values.checkOut.diff(values.checkIn, "hour", true);
+  const handleSubmit = async (values) => {
+    const checkInTime = dayjs(values.date)
+      .hour(values.checkIn.hour())
+      .minute(values.checkIn.minute())
+      .second(0)
+      .format("YYYY-MM-DDTHH:mm:ss");
 
-    const newRecord = {
-      key: editingRecord ? editingRecord.key : Date.now().toString(),
-      date: values.date.format("YYYY-MM-DD"),
-      checkIn,
-      checkOut,
-      totalHours: Math.round(totalHours * 100) / 100,
-      status: totalHours >= 8 ? "completed" : "late",
-      employee: "Nguyễn Văn A",
-    };
+    const checkOutTime = dayjs(values.date)
+      .hour(values.checkOut.hour())
+      .minute(values.checkOut.minute())
+      .second(0)
+      .format("YYYY-MM-DDTHH:mm:ss");
 
     if (editingRecord) {
-      setTimesheetData(
-        timesheetData.map((item) =>
-          item.key === editingRecord.key ? newRecord : item
-        )
-      );
-      message.success("Cập nhật thành công!");
-    } else {
-      setTimesheetData([...timesheetData, newRecord]);
-      message.success("Thêm mới thành công!");
+      const formData = new FormData();
+      formData.append("checkIn", checkInTime);
+      formData.append("checkOut", checkOutTime);
+
+      try {
+        const response = await updateAttendace(editingRecord.key, formData);
+        if (response.status === "SUCCESS")
+          message.success("Cập nhật chấm công thành công!");
+        else message.error(response.message);
+        await fetchAttendance();
+      } catch (error) {
+        console.error("Lỗi cập nhật:", error);
+        message.error("Cập nhật thất bại!");
+      }
     }
 
     setIsModalVisible(false);

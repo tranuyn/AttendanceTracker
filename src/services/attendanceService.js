@@ -2,7 +2,7 @@ import { useApi } from "../api/rest-util";
 import dayjs from "dayjs";
 
 export function useAttendanceService() {
-  const { get, post, postForm } = useApi();
+  const { get, post, postForm, put } = useApi();
 
   const checkInWithImage = async (formData) => {
     return await postForm("/attendance/checkin", formData);
@@ -34,6 +34,10 @@ export function useAttendanceService() {
     if (month) url += `&month=${month}`;
     return await get(url);
   };
+
+  const updateAttendace = async (id, body) => {
+    return await put(`/attendance/update/${id}`, body);
+  };
   return {
     checkInWithImage,
     checkOutWithImage,
@@ -42,5 +46,6 @@ export function useAttendanceService() {
     getAttendanceBetween,
     getReportYearly,
     getAllAttendance,
+    updateAttendace,
   };
 }
