@@ -189,11 +189,70 @@ const ReportSection = () => {
     }
   };
 
+  const fetchAllAttendanceData = async () => {
+    const pageSize = 100; // Tùy chọn: có thể tăng lên nếu API cho phép
+    let page = 0;
+    let allData = [];
+    let totalPages = 1;
+
+    const year = date.year();
+    const month = mode === "month" ? date.month() + 1 : undefined;
+
+    try {
+      while (page < totalPages) {
+        const response = await getAllAttendance({
+          year,
+          month,
+          page,
+          size: pageSize,
+        });
+
+        const records = response?.content || [];
+        allData = allData.concat(records);
+
+        const totalElements = response?.totalElements || 0;
+        totalPages = Math.ceil(totalElements / pageSize);
+        page++;
+      }
+    } catch (err) {
+      message.error("Không thể tải toàn bộ dữ liệu để export/in.");
+      return null;
+    }
+
+    return allData;
+  };
+
+
   const handleTableChange = (paginationInfo) => {
     console.log('Table pagination changed:', paginationInfo);
     if (selectedUser === "all") {
       handleGenerateReport(paginationInfo.current, paginationInfo.pageSize);
     }
+  };
+  const handleExport = async () => {
+    let exportData = data;
+
+    if (selectedUser === "all") {
+      const all = await fetchAllAttendanceData();
+      if (!all) return;
+      exportData = all;
+    }
+
+    exportToExcel(exportData);
+  };
+
+  const handlePrint = async () => {
+    let printData = data;
+    let stats = statistics;
+
+    if (selectedUser === "all") {
+      const all = await fetchAllAttendanceData();
+      if (!all) return;
+      printData = all;
+      stats = calculateStatistics(all);
+    }
+
+    printReport(printData, "Báo cáo chấm công", stats);
   };
 
   const columns = [
@@ -334,8 +393,8 @@ const ReportSection = () => {
               Xem báo cáo
             </Button>
             <div className="flex gap-2">
-              <Button icon={<PrinterOutlined />} onClick={() => printReport(data)}  />
-              <Button icon={<FileExcelOutlined />} onClick={() => exportToExcel(data)} />
+              <Button icon={<PrinterOutlined />} onClick={handlePrint}  />
+              <Button icon={<FileExcelOutlined />} onClick={handleExport} />
             </div>
           </div>
         </div>
